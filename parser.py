@@ -15,7 +15,7 @@ def parseData():
     locations = []
 
     # set the size of the feature vector
-    featureSize = 19
+    featureSize = 21
 
     # counter for number of restauraunts
     count = 0
@@ -168,22 +168,49 @@ def parseData():
                     
                     # feature 19 = good for lunch
                     if 'lunch' in purpose:
-                        featureVector[count][17] = \
+                        featureVector[count][18] = \
                             binaryFeature(purpose['lunch'])
 
+                # feature 20 = restaurant has TV
+                if 'Has TV' in attributes:
+                    featureVector[count][19] = \
+                            binaryFeature(attributes['Has TV'])
+
+                # feature 21 = price range
+                if 'Price Range' in attributes:
+                    featureVector[count][20] = \
+                            binaryFeature(attributes['Price Range'])
+                
+                
                 # increment the number of restaurants found
                 count += 1
 
+    plotLocations(locations,cities)
+    return (IDs, cities, ratings, featureVector)
 
+def plotLocations(locations,cities):
+    
     import matplotlib.pyplot as plt
-    for loc in locations:
-        plt.plot(loc[1],loc[0],'kx')
+    
+    for i,loc in enumerate(locations):
+        c = 'w'
+        if cities[i] == "Phoenix":
+            c = 'k'
+        elif cities[i] == "Las Vegas":
+            c = 'm'
+        elif cities[i] == "Madison":
+            c = 'r'
+        elif cities[i] == "Waterloo":
+            c = 'b'
+        elif cities[i] == "Edinburgh":
+            c = 'g'
+        plt.plot(loc[1],loc[0],'.', color = c)
+    
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
     plt.show()
-    return (IDs, cities, ratings, featureVector)
 
-
+# convert a feature that is True/False into +1/-1
 def binaryFeature(binaryVal):
     if binaryVal:
         return 1
@@ -194,7 +221,7 @@ def binaryFeature(binaryVal):
 def determineMetro(loc):
 
     # distance within which a location is considered part of the metro area
-    tolerance = 4
+    tolerance = 3
 
     # check for cities: Phoenix, Las Vegas, Madison, Waterloo, and Edinburgh
     if sqrt( (loc[0] - 33.27)**2 + (loc[1] + 112.04)**2 ) < tolerance:
