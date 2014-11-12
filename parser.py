@@ -20,7 +20,7 @@ def parseData():
     # counter for number of restauraunts
     count = 0
 
-    #FIXME: determine what to do if data is not present
+    # TODO: determine what to do if data is not present
     # At the moment, all features are initialized with 0 so non-present
     # data gets a 0
 
@@ -185,9 +185,9 @@ def parseData():
                 # increment the number of restaurants found
                 count += 1
 
-    plotLocations(locations,cities)
-    return (IDs, cities, ratings, featureVector)
+    return (IDs, cities, locations, ratings, featureVector)
 
+# creates a plot of business locations by (latitude, longitude) coordinates
 def plotLocations(locations,cities):
     
     import matplotlib.pyplot as plt
@@ -241,8 +241,8 @@ def determineMetro(loc):
 
 # executes when script is run
 def runScript():
-    (IDs, cities, ratings, featureVector) = parseData()
-    print cities
+    (IDs, cities, locations, ratings, featureVector) = parseData()
+    plotLocations(locations,cities)
 
 if __name__ == "__main__":
     runScript()
