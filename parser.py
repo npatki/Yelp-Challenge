@@ -1,15 +1,18 @@
 #!/usr/local/bin/python
+from math import *
 import json
 import numpy as np
 import scipy as sp
 import pprint
 
 def parseData():
+    
     # initialize arrays for machine learning
     featureVector = []
     cities = []
     ratings = []
     IDs = []
+    locations = []
 
     # set the size of the feature vector
     featureSize = 19
@@ -38,14 +41,24 @@ def parseData():
                 ID = rawData['business_id']
                 IDs.append(ID)
 
-                # extract city
+                # extract city (not used)
                 city = rawData['city']
-                cities.append(city)
 
                 # extract rating
                 rating = rawData['stars']
                 ratings.append(rating)
 
+                
+                # extract coordinates (latitude, longitude)
+                longitude = rawData['longitude']
+                latitude = rawData['latitude']
+                location = (latitude, longitude)
+                locations.append(location)
+                
+                # determine metro area from location
+                city = determineMetro(location)
+                cities.append(city)
+                
                 # allocate feature vector & extract features
                 featureVector.append(np.zeros(featureSize))
 
@@ -113,7 +126,7 @@ def parseData():
                 # feature 12 = alcohol offered
                 if 'Alcohol' in attributes:
                     if attributes['Alcohol'] == 'none':
-                        featureVector[count][11] = 0
+                        featureVector[count][11] = -1
                     else:
                         featureVector[count][11] = 1
 
@@ -122,7 +135,7 @@ def parseData():
                     if attributes['Attire'] == 'casual':
                         featureVector[count][12] = 1
                     else:
-                        featureVector[count][12] = 0
+                        featureVector[count][12] = -1
 
                 # features 14 - 19 = what restauarant is good for
                 if 'Good For' in attributes:
@@ -161,7 +174,14 @@ def parseData():
                 # increment the number of restaurants found
                 count += 1
 
-    return (ID, cities, ratings, featureVector)
+
+    import matplotlib.pyplot as plt
+    for loc in locations:
+        plt.plot(loc[1],loc[0],'kx')
+    plt.xlabel("Longitude")
+    plt.ylabel("Latitude")
+    plt.show()
+    return (IDs, cities, ratings, featureVector)
 
 
 def binaryFeature(binaryVal):
@@ -170,6 +190,29 @@ def binaryFeature(binaryVal):
     else:
         return -1
 
+# determines metro area from (latitude, longitude) location coordintes
+def determineMetro(loc):
+
+    # distance within which a location is considered part of the metro area
+    tolerance = 4
+
+    # check for cities: Phoenix, Las Vegas, Madison, Waterloo, and Edinburgh
+    if sqrt( (loc[0] - 33.27)**2 + (loc[1] + 112.04)**2 ) < tolerance:
+        return "Phoenix"
+    elif sqrt( (loc[0] - 36.10)**2 + (loc[1] + 115.08)**2 ) < tolerance:
+        return "Las Vegas"
+    elif sqrt( (loc[0] - 43.3)**2 + (loc[1] + 89.24)**2 ) < tolerance:
+        return "Madison"
+    elif sqrt( (loc[0] - 43.28)**2 + (loc[1] + 80.31)**2 ) < tolerance:
+        return "Waterloo"
+    elif sqrt( (loc[0] - 55.57)**2 + (loc[1] + 3.11)**2 ) < tolerance:
+        return "Edinburgh"
+    else:
+        print "Error: Could not determine city from coordinates"
+        print loc
+        return ""
+
+# executes when script is run
 def runScript():
     (IDs, cities, ratings, featureVector) = parseData()
     print cities
