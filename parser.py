@@ -168,7 +168,7 @@ def binaryFeature(binaryVal):
     if binaryVal:
         return 1
     else:
-        return 0
+        return -1
 
 def runScript():
     (IDs, cities, ratings, featureVector) = parseData()
