@@ -178,8 +178,7 @@ def parseData():
 
                 # feature 21 = price range
                 if 'Price Range' in attributes:
-                    featureVector[count][20] = \
-                            binaryFeature(attributes['Price Range'])
+                    featureVector[count][20] = attributes['Price Range']
                 
                 
                 # increment the number of restaurants found
