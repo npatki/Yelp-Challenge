@@ -15,7 +15,7 @@ def parseData():
     locations = []
 
     # set the size of the feature vector
-    featureSize = 21
+    featureSize = 64
 
     # counter for number of restauraunts
     count = 0
@@ -69,117 +69,202 @@ def parseData():
                 # features based on attributes
                 attributes = rawData['attributes']
 
-                # feature 2 = accepts credit cards
+                # feature (2,3,4) = accepts credit cards
                 if 'Accepts Credit Cards' in attributes:
-                    featureVector[count][1] = \
-                        binaryFeature(attributes['Accepts Credit Cards'])
+                    if attributes['Accepts Credit Cards']:
+                        featureVector[count][1] = 1
+                    else:
+                        featureVector[count][2] = 1
+                else:
+                    featureVector[count][3] = 1
 
-                # features 3 - 11 = ambience (binary features)
+                # features (5,6,7) - (29,30,31) = ambience (binary features)
                 if 'Ambience' in attributes:
                     ambience = attributes['Ambience']
 
-                    # feature 3 = casual
+                    # feature (5,6,7) = casual
                     if 'casual' in ambience:
-                        featureVector[count][2] = \
-                                binaryFeature(ambience['casual'])
+                        if ambience['casual']:
+                            featureVector[count][4] = 1
+                        else:
+                            featureVector[count][5] = 1
+                    else:
+                        featureVector[count][6] = 1
 
-                    # feature 4 = classy
+                    # feature (8,9,10) = classy
                     if 'classy' in ambience:
-                        featureVector[count][3] = \
-                                binaryFeature(ambience['classy'])
+                        if ambience['classy']:
+                            featureVector[count][7] = 1
+                        else:
+                            featureVector[count][8] = 1
+                    else:
+                        featureVector[count][9] = 1
 
-                    # feature 5 = divey
+                    # feature (11,12,13) = divey
                     if 'divey' in ambience:
-                        featureVector[count][4] = \
-                                binaryFeature(ambience['divey'])
+                        if ambience['divey']:
+                            featureVector[count][10] = 1
+                        else:
+                            featureVector[count][11] = 1
+                    else:
+                        featureVector[count][12] = 1
 
-                    # feature 6 = hipster
+                    # feature (14,15,16) = hipster
                     if 'hipster' in ambience:
-                        featureVector[count][5] = \
-                                binaryFeature(ambience['hipster'])
+                        if ambience['hipster']:
+                            featureVector[count][13] = 1
+                        else:
+                            featureVector[count][14] = 1
+                    else:
+                        featureVector[count][15] = 1
                   
-                    # feature 7 = intimate
+                    # feature (17,18,19) = intimate
                     if 'intimate' in ambience:
-                        featureVector[count][6] = \
-                                binaryFeature(ambience['intimate'])
+                        if ambience['intimate']:
+                            featureVector[count][16] = 1
+                        else:
+                            featureVector[count][17] = 1
+                    else:
+                        featureVector[count][18] = 1
                    
-                    # feature 8 = romantic
+                    # feature (20,21,22) = romantic
                     if 'romantic' in ambience:
-                        featureVector[count][7] = \
-                                binaryFeature(ambience['romantic'])
+                        if ambience['romantic']:
+                            featureVector[count][19] = 1
+                        else:
+                            featureVector[count][20] = 1
+                    else:
+                        featureVector[count][21] = 1
 
-                    # feature 9 = touristy
+                    # feature (23,24,25) = touristy
                     if 'touristy' in ambience:
-                        featureVector[count][8] = \
-                                binaryFeature(ambience['touristy'])
+                        if ambience['touristy']:
+                            featureVector[count][22] = 1
+                        else:
+                            featureVector[count][23] = 1
+                    else:
+                        featureVector[count][24] = 1
 
-                    # feature 10 = trendy
+                    # feature (26,27,28) = trendy
                     if 'trendy' in ambience:
-                        featureVector[count][9] = \
-                                binaryFeature(ambience['trendy'])
+                        if ambience['trendy']:
+                            featureVector[count][25] = 1
+                        else:
+                            featureVector[count][26] = 1
+                    else:
+                        featureVector[count][27] = 1
 
-                    # feature 11 = upscale
+                    # feature (29,30,31) = upscale
                     if 'upscale' in ambience:
-                        featureVector[count][10] = \
-                                binaryFeature(ambience['upscale'])
-                   
-                # feature 12 = alcohol offered
+                        if ambience['upscale']:
+                            featureVector[count][28] = 1
+                        else:
+                            featureVector[count][29] = 1
+                    else:
+                        featureVector[count][30] = 1
+                
+                else:
+                    # fill features with "unknown" marker
+                    featureVector[count][6] = 1
+                    featureVector[count][9] = 1
+                    featureVector[count][12] = 1
+                    featureVector[count][15] = 1
+                    featureVector[count][18] = 1
+                    featureVector[count][21] = 1
+                    featureVector[count][24] = 1
+                    featureVector[count][27] = 1
+                    featureVector[count][30] = 1
+
+                # feature (32,33,34) = alcohol offered
                 if 'Alcohol' in attributes:
                     if attributes['Alcohol'] == 'none':
-                        featureVector[count][11] = -1
+                        featureVector[count][31] = 1
                     else:
-                        featureVector[count][11] = 1
+                        featureVector[count][32] = 1
+                else:
+                    featureVector[count][33] = 1
 
-                # feature 13 = casual attire
+                # feature (35,36,37) = casual attire
                 if 'Attire' in attributes:
                     if attributes['Attire'] == 'casual':
-                        featureVector[count][12] = 1
+                        featureVector[count][34] = 1
                     else:
-                        featureVector[count][12] = -1
+                        featureVector[count][35] = 1
+                else:
+                    featureVector[count][36] = 1
 
-                # features 14 - 19 = what restauarant is good for
+                # features (38-40) - (53-55) = what restauarant is good for
                 if 'Good For' in attributes:
                     purpose = attributes['Good For']
                     
-                    # feature 14 = good for breakfast
+                    # feature (38,39,40) = good for breakfast
                     if 'breakfast' in purpose:
-                        featureVector[count][13] = \
-                            binaryFeature(purpose['breakfast'])
+                        if purpose['breakfast']:
+                            featureVector[count][37] = 1
+                        else:
+                            featureVector[count][38] = 1
+                    else:
+                        featureVector[count][39] = 1
 
-                    # feature 15 = good for brunch
+                    # feature (41,42,43) = good for brunch
                     if 'brunch' in purpose:
-                        featureVector[count][14] = \
-                            binaryFeature(purpose['brunch'])
+                        if purpose['brunch']:
+                            featureVector[count][40] = 1
+                        else:
+                            featureVector[count][41] = 1
+                    else:
+                        featureVector[count][42] = 1
 
-                    # feature 16 = good for dessert
+                    # feature (44,45,46) = good for dessert
                     if 'dessert' in purpose:
-                        featureVector[count][15] = \
-                            binaryFeature(purpose['dessert'])
+                        if purpose['dessert']:
+                            featureVector[count][43] = 1
+                        else:
+                            featureVector[count][44] = 1
+                    else:
+                        featureVector[count][45] = 1
 
-                    # feature 17 = good for dinner
+                    # feature (47,48,49) = good for dinner
                     if 'dinner' in purpose:
-                        featureVector[count][16] = \
-                            binaryFeature(purpose['dinner'])
+                        if purpose['dinner']:
+                            featureVector[count][46] = 1
+                        else:
+                            featureVector[count][47] = 1
+                    else:
+                        featureVector[count][48] = 1
 
-                    # feature 18 = good for late night
+                    # feature (50,51,52) = good for late night
                     if 'latenight' in purpose:
-                        featureVector[count][17] = \
-                            binaryFeature(purpose['latenight'])
+                        if purpose['latenight']:
+                            featureVector[count][49] = 1
+                        else:
+                            featureVector[count][50] = 1
+                    else:
+                        featureVector[count][51] = 1
                     
-                    # feature 19 = good for lunch
+                    # feature (53,54,55) = good for lunch
                     if 'lunch' in purpose:
-                        featureVector[count][18] = \
-                            binaryFeature(purpose['lunch'])
+                        if purpose['lunch']:
+                            featureVector[count][52] = 1
+                        else:
+                            featureVector[count][53] = 1
+                    else:
+                        featureVector[count][54] = 1
 
-                # feature 20 = restaurant has TV
+                # feature (56,57,58) = restaurant has TV
                 if 'Has TV' in attributes:
-                    featureVector[count][19] = \
-                            binaryFeature(attributes['Has TV'])
+                    if attributes['Has TV']:
+                        featureVector[count][55] = 1
+                    else:
+                        featureVector[count][56] = 1
+                else:
+                    featureVector[count][57] = 1
 
-                # feature 21 = price range
+                # feature (59-64) = price range
                 if 'Price Range' in attributes:
-                    featureVector[count][20] = \
-                            binaryFeature(attributes['Price Range'])
+                    featureVector[count][58+attributes['Price Range']] = 1
+                else:
+                    featureVector[count][58] = 1
                 
                 
                 # increment the number of restaurants found
