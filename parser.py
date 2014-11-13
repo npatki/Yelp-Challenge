@@ -250,6 +250,15 @@ def parseData():
                             featureVector[count][53] = 1
                     else:
                         featureVector[count][54] = 1
+                else:
+                    # fill feature vector with "unknown" markers
+                    featureVector[count][39] = 1
+                    featureVector[count][42] = 1
+                    featureVector[count][45] = 1
+                    featureVector[count][48] = 1
+                    featureVector[count][51] = 1
+                    featureVector[count][54] = 1
+                    
 
                 # feature (56,57,58) = restaurant has TV
                 if 'Has TV' in attributes:
