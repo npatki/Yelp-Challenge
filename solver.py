@@ -9,8 +9,6 @@ def svmSolver(svmType = "one-vs-the-rest"):
     # load data
     (IDs, cities, locations, ratings, featureVector) = parser.parseData()
 
-    svmType = "one-against-one"
-
     # setup problem in terms of X,Y
     X = featureVector
     Y = []
@@ -36,8 +34,10 @@ def svmSolver(svmType = "one-vs-the-rest"):
                 gamma=0.0, kernel='rbf', max_iter=-1, probability=False, \
                 random_state=None, shrinking=True, tol=0.001, verbose=False)
         clf.fit(X, Y)
-        dec = clf.decision_function(testX)
-        print dec
+        #dec = clf.decision_function(testX)
+
+        # make predictions
+        Yprime = clf.predict(X)
 
     # setup one-vs-the-rest
     elif svmType == "one-vs-the-rest":
@@ -47,8 +47,19 @@ def svmSolver(svmType = "one-vs-the-rest"):
                 multi_class='ovr', penalty='l2', random_state=None, \
                 tol=0.0001, verbose=0)
         lin_clf.fit(X, Y)
-        dec = lin_clf.decision_function(testX)
-        print dec
+        #dec = lin_clf.decision_function(X)
+        
+        # make predictions (on training data)
+        Yprime = lin_clf.predict(X)
+
+        # test accuracty of predictions (on training data)
+        N = len(Yprime)
+        success = 0
+        for i in xrange(N):
+            if Yprime[i] == Y[i]:
+                success += 1
+        accuracy = float(success) / float(N)
+        print "Training Accuracy = " + str(accuracy)
 
 if __name__ == "__main__":
     svmSolver()       

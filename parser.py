@@ -15,7 +15,7 @@ def parseData():
     locations = []
 
     # set the size of the feature vector
-    featureSize = 64
+    featureSize = 65
 
     # counter for number of restauraunts
     count = 0
@@ -47,7 +47,6 @@ def parseData():
                 # extract rating
                 rating = rawData['stars']
                 ratings.append(rating)
-
                 
                 # extract coordinates (latitude, longitude)
                 longitude = rawData['longitude']
@@ -275,7 +274,9 @@ def parseData():
                 else:
                     featureVector[count][58] = 1
                 
-                
+                # add rating to feature vector
+                featureVector[count][64] = rating
+
                 # increment the number of restaurants found
                 count += 1
 
