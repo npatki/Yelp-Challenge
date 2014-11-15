@@ -34,8 +34,9 @@ def parseData():
             # check if the business is a restaurant
             if 'Restaurants' in rawData['categories']:
 
-                # uncomment to print a lines
+                # uncomment to print a line
                 #pprint.pprint(rawData, width=1)
+                #exit()
 
                 # save busineess ID
                 ID = rawData['business_id']
