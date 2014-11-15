@@ -104,13 +104,21 @@ def sweepOptimalVal(trainX, valX, trainY, valY, svmType, param = 'lambda', \
         print "Validaiton Accuracy = " + str(valAccuracy[i])
 
     # plot training results
-    plt.plot(testVals, trainAccuracy)
+    if stepType == 'log':
+        plt.semilogx(testVals, trainAccuracy)
+    else:
+        plt.plot(testVals, trainAccuracy)
+
     plt.xlabel(param)
     plt.ylabel("Training Accuracy")
     plt.show()
    
     # plot validation results
-    plt.plot(testVals, valAccuracy)
+    if stepType == 'log':
+        plt.semilogx(testVals, valAccuracy)
+    else:
+        plt.plot(testVals, valAccuracy)
+    
     plt.xlabel(param)
     plt.ylabel("Validation Accuracy")
     plt.show()
