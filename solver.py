@@ -44,7 +44,7 @@ def solver():
 
     # sweep space to find optimal parameter gamma
     gamma = sweepOptimalVal(trainX, valX, trainY, valY, svmType, param = 'gamma', \
-            minVal = -3, maxVal = 3, steps = 100, stepType = 'log')
+            minVal = -3, maxVal = 3, steps = 2, stepType = 'log')
     #gamma = findOptimalVal(trainX, valX, trainY, valY, param = 'gamma')
 
             
@@ -78,8 +78,8 @@ def sweepOptimalVal(trainX, valX, trainY, valY, svmType, param = 'lambda', \
         # check SVM type
         if svmType == 'one-vs-the-rest':
             clf = svm.LinearSVC(C=1.0, class_weight=None, dual=True,\
-            fit_intercept=True, intercept_scaling=1, loss='l2', \
-            multi_class='ovr', penalty='l2', random_state=None, \
+                fit_intercept=True, intercept_scaling=1, loss='l2', \
+                multi_class='ovr', penalty='l2', random_state=None, \
                     tol=0.0001, verbose=0)
             clf.fit(trainX, trainY)
 
@@ -88,6 +88,7 @@ def sweepOptimalVal(trainX, valX, trainY, valY, svmType, param = 'lambda', \
                     degree=3, gamma=val, kernel='rbf', max_iter=-1, \
                     probability=False, random_state=None, shrinking=True, \
                     tol=0.001, verbose=False)
+            clf = svm.SVC(gamma = val)
             clf.fit(trainX, trainY)
 
         else:
@@ -145,9 +146,9 @@ def trainSVM(X, Y, svmType = 'one-vs-the-rest', kernel = 'rbf', gamma = 1.0,\
     # check SVM type
     if svmType == 'one-vs-the-rest':
         clf = svm.LinearSVC(C=1.0, class_weight=None, dual=True,\
-        fit_intercept=True, intercept_scaling=1, loss='l2', \
-        multi_class='ovr', penalty='l2', random_state=None, \
-                tol=0.0001, verbose=0)
+            fit_intercept=True, intercept_scaling=1, loss='l2', \
+            multi_class='ovr', penalty='l2', random_state=None, \
+            tol=0.0001, verbose=0)
         clf.fit(X, Y)
 
     elif svmType == 'one-against-one':

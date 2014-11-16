@@ -20,21 +20,34 @@ class AmbianceExtractor(object):
         'upscale'
     ]
 
+    # deal with missing values by creating a binary
+    # vector to represent true, false, missing
+    vectors = {
+        'true': [1, 0, 0],
+        'false': [0, 1, 0],
+        'missing': [0, 0, 1]
+    }
+    
     def __call__(self, data):
         """Return binary feature vector with 1's that
         correspond to the appropriate ambiances."""
 
-        vector = [0]*len(self.all_ambiances)
+        vector = []
 
         if 'Ambiance' in data['attributes']:
             ambiances = data['attributes']['Ambiance']
 
-            for ambiance in ambiances:
-                try:
-                    index = self.all_ambiances.index(ambiance)
-                except ValueError:
-                    continue
-                vector[index] = 1
+            for ambiance in self.all_ambiances:
+                if ambiance in ambiances:
+                    if ambiances[ambiance]:
+                        vector.extend(copy(self.vectors['true']))
+                    else:
+                        vector.extend(copy(self.vectors['false']))
+                else:
+                    vector.extend(copy(self.vectors['missing']))
+        else:
+            for i in xrange(self.all_ambiances):
+                vector.extend(copy(self.vectors['missing']))
 
         return vector
 
