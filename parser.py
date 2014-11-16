@@ -25,14 +25,13 @@ def parseData():
     # data gets a 0
 
     # cycle through all lines in the JSON yelp business dataset
-    with open('../Data/yelp_academic_dataset_user.json') as f:
+    with open('../Data/yelp_academic_dataset_business.json') as f:
         for line in f:
 
             # load JSON data    
             rawData = json.loads(line)
 
-            pprint.pprint(rawData, width=1)
-            exit()
+            #pprint.pprint(rawData, width=1)
 
             # check if the business is a restaurant
             if 'Restaurants' in rawData['categories']:
@@ -40,6 +39,10 @@ def parseData():
                 # uncomment to print a line
                 #pprint.pprint(rawData, width=1)
                 #exit()
+
+                if 'Attire' in rawData['attributes']:
+                    if rawData['attributes']['Attire'] != 'casual' and rawData['attributes']['Attire'] != 'dressy':
+                        print "Attire = " + str( rawData['attributes']['Attire'] )
 
                 # save busineess ID
                 ID = rawData['business_id']

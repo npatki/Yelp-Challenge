@@ -51,6 +51,49 @@ class AmbianceExtractor(object):
 
         return vector
 
+# 
+class GoodForExtractor(object):
+
+    all_purposes = [
+        'breakfast',
+        'brunch',
+        'dessert',
+        'dinner',
+        'latenight',
+        'lunch'
+    ]
+
+    # deal with missing values by creating a binary
+    # vector to represent true, false, missing
+    vectors = {
+        'true': [1, 0, 0],
+        'false': [0, 1, 0],
+        'missing': [0, 0, 1]
+    }
+    
+    def __call__(self, data):
+        """Return binary feature vector with 1's that
+        correspond to the appropriate ambiances."""
+
+        vector = []
+
+        if 'Good For' in data['attributes']:
+            purposes = data['attributes']['Good For']
+
+            for purpose in self.all_purposes:
+                if purpose in purposes:
+                    if ambiances[ambiance]:
+                        vector.extend(copy(self.vectors['true']))
+                    else:
+                        vector.extend(copy(self.vectors['false']))
+                else:
+                    vector.extend(copy(self.vectors['missing']))
+        else:
+            for i in xrange(len(self.all_purposes)):
+                vector.extend(copy(self.vectors['missing']))
+
+        return vector
+
 
 class BooleanAttributesExtractor(object):
 
@@ -65,6 +108,7 @@ class BooleanAttributesExtractor(object):
         'Outdoor Seating',
         'Waiter Service'
     ]
+
 
     # deal with missing values by creating a binary
     # vector to represent true, false, missing
@@ -85,6 +129,53 @@ class BooleanAttributesExtractor(object):
                     vector.extend(copy(self.vectors['false']))
             else:
                 vector.extend(copy(self.vectors['missing']))
+
+        return vector
+
+
+class StringAttributeExtractor(object):
+
+    # attributes that have string values
+    alcohols = [
+        'full_bar',
+        'beer_and_wine',
+        'none'
+    ]
+
+    attires = [
+        'casual',
+        'dressy',
+        'formal'
+    ]
+ 
+    def __call__(self, data):
+        vector = []
+
+        # add alcohol features
+        if 'Alcohol' in data['attributes']:
+            for alcohol in alcohols:
+                if data['attributes']['Alcohol'] == alcohol:
+                    vector.append(1)
+                else:
+                    vector.append(0)
+            vector.append(0)
+        else:
+            for i in xrange(alcohols):
+                vector.append(0)
+            vector.append(1)
+
+        # add attire features
+        if 'Attire' in data['attributes']:
+            for attire in attires:
+                if data['attributes']['Attire'] == attire:
+                    vector.append(1)
+                else:
+                    vector.append(0)
+            vector.append(0)
+        else:
+            for i in xrange(attires):
+                vector.append(0)
+            vector.append(1)
 
         return vector
 
