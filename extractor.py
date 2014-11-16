@@ -2,6 +2,7 @@
 A script that extracts features and writes a new file of feature
 vectors.
 """
+from copy import deepcopy as copy
 import math
 
 
@@ -30,7 +31,7 @@ class AmbianceExtractor(object):
 
             for ambiance in ambiances:
                 try:
-                    incex = self.all_ambiances.index(ambiance)
+                    index = self.all_ambiances.index(ambiance)
                 except ValueError:
                     continue
                 vector[index] = 1
@@ -52,12 +53,25 @@ class BooleanAttributesExtractor(object):
         'Waiter Service'
     ]
 
+    # deal with missing values by creating a binary
+    # vector to represent true, false, missing
+    vectors = {
+        'true': [1, 0, 0],
+        'false': [0, 1, 0],
+        'missing': [0, 0, 1]
+    }
+
     def __call__(self, data):
-        vector = [0]*len(self.attributes)
+        vector = []
 
         for index, attribute in enumerate(self.attributes):
             if attribute in data['attributes']:
-                vector[index] = 1
+                if data['attributes'][attribute]:
+                    vector.extend(copy(self.vectors['true']))
+                else:
+                    vector.extend(copy(self.vectors['false']))
+            else:
+                vector.extend(copy(self.vectors['missing']))
 
         return vector
 
