@@ -46,7 +46,7 @@ class AmbianceExtractor(object):
                 else:
                     vector.extend(copy(self.vectors['missing']))
         else:
-            for i in xrange(self.all_ambiances):
+            for i in xrange(len(self.all_ambiances)):
                 vector.extend(copy(self.vectors['missing']))
 
         return vector
