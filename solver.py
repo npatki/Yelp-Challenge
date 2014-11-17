@@ -5,30 +5,10 @@ import matplotlib.pyplot as plt
 from sklearn import svm
 
 # SVM solver for city classification problem
-def solver():
-    
-    # load data
-    (IDs, cities, locations, ratings, featureVector) = parser.parseData()
+def classify(X,Y):
 
     # define SVM type
     svmType = "one-against-one"
-
-    # setup problem in terms of X,Y
-    X = featureVector
-    Y = []
-    for city in cities:
-        if city == "Phoenix":
-            Y.append(0)
-        elif city == "Las Vegas":
-            Y.append(1)
-        elif city == "Madison":
-            Y.append(2)
-        elif city == "Waterloo":
-            Y.append(3)
-        elif city == "Edinburgh":
-            Y.append(4)
-        else:
-            print "Error: unrecognized city"
 
     # form train, validation, and test datasets
     trainSize = len(X)/2

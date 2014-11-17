@@ -25,7 +25,7 @@ def parseData():
     # data gets a 0
 
     # cycle through all lines in the JSON yelp business dataset
-    with open('../Data/yelp_academic_dataset_user.json') as f:
+    with open('../Data/yelp_academic_dataset_review.json') as f:
         for line in f:
 
             # load JSON data    
