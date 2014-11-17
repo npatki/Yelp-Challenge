@@ -23,12 +23,60 @@ def main():
     print "Loading user information..."
     userDict = LoadUserInformation(userFile)
 
+    # determine how many users have more than 10 reviews, average number of reviews
+    print "\nDetermining user breakdown:"
+    nusers = 0
+    rev10 = 0
+    revtotal = 0
+    for user in userDict.keys():
+        nusers += 1
+        numrevs = userDict[user][0]
+        revtotal += numrevs
+        if numrevs >= 10:
+            rev10 +=  1
+    print "More than 10 reviews = " + str(rev10) + "/" + str(nusers) + " users"
+    print "Average review number = " + str( float(revtotal) / float(nusers) ) + '\n'
+
     # load review dictionary (user_id keys, [business_id, stars] values)
     print "Loading review information..."
     reviewDict = LoadReviewInformation(reviewFile)
 
-    print len(businessDict)
+    # determine how many users have more than 10 reviews, average number of reviews
+    print "\nDetermining user review breakdown:"
+    nusers = 0
+    revX = 0
+    revtotal = 0
+    for user in reviewDict.keys():
+        nusers += 1
+        numrevs = len(reviewDict[user])
+        revtotal += numrevs
+        if numrevs >= 10:
+            revX +=  1
+ 
+    print "More than 10 reviews = " + str(revX) + "/" + str(nusers) + " users"
+    print "Average review number = " + str( float(revtotal) / float(nusers) ) + '\n'
 
+
+    # create new dictionary that stores relevant (restaurant) information
+    print "\nRestaurant review breakdown:"
+    nusers = 0
+    revX = 0
+    revtotal = 0
+    for user in reviewDict.keys():
+        numrevs = 0
+        reviews = reviewDict[user]
+        for review in reviews:
+            business = review[0] 
+            if business in businessDict:
+                numrevs += 1
+        if numrevs > 0:
+            nusers += 1
+            revtotal += numrevs
+            if numrevs >= 10:
+                revX += 1
+
+    print "More than 10 restaurant reviews = " + str(revX) + "/" + str(nusers) + " users"
+    print "Average restaurant review number = " + str( float(revtotal) / float(nusers) ) + '\n'
 
 
 """
@@ -143,12 +191,16 @@ def LoadReviewInformation(filename):
             # load user id
             userID = rawData['user_id']
             
+            # add user to dictionary if not already added            
+            if userID not in userDict:
+                userDict.update( [(userID, [])] )
+
             # load user information, store as duple
             reviewInfo = (rawData['business_id'], rawData['stars'])
 
             # save information in dictionary
-            userDict.update( [(userID, reviewInfo)] )
-
+            userDict[userID].append(reviewInfo)
+            
     return userDict
 
 
