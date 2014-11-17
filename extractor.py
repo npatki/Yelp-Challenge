@@ -51,7 +51,7 @@ class AmbianceExtractor(object):
 
         return vector
 
-# 
+
 class GoodForExtractor(object):
 
     all_purposes = [
@@ -82,7 +82,7 @@ class GoodForExtractor(object):
 
             for purpose in self.all_purposes:
                 if purpose in purposes:
-                    if ambiances[ambiance]:
+                    if purposes[purpose]:
                         vector.extend(copy(self.vectors['true']))
                     else:
                         vector.extend(copy(self.vectors['false']))
@@ -133,7 +133,7 @@ class BooleanAttributesExtractor(object):
         return vector
 
 
-class StringAttributeExtractor(object):
+class StringAttributesExtractor(object):
 
     # attributes that have string values
     alcohols = [
@@ -153,27 +153,27 @@ class StringAttributeExtractor(object):
 
         # add alcohol features
         if 'Alcohol' in data['attributes']:
-            for alcohol in alcohols:
+            for alcohol in self.alcohols:
                 if data['attributes']['Alcohol'] == alcohol:
                     vector.append(1)
                 else:
                     vector.append(0)
             vector.append(0)
         else:
-            for i in xrange(alcohols):
+            for alcohol in self.alcohols:
                 vector.append(0)
             vector.append(1)
 
         # add attire features
         if 'Attire' in data['attributes']:
-            for attire in attires:
+            for attire in self.attires:
                 if data['attributes']['Attire'] == attire:
                     vector.append(1)
                 else:
                     vector.append(0)
             vector.append(0)
         else:
-            for i in xrange(attires):
+            for attire in self.attires:
                 vector.append(0)
             vector.append(1)
 
@@ -242,20 +242,30 @@ class CityExtractor(object):
         'Edinburgh': (55.9531, -3.1889)
     }
 
+    cityCodes = {
+        'Phoenix': [1,0,0,0,0],
+        'Las Vegas': [0,1,0,0,0],
+        'Madison': [0,0,1,0,0],
+        'Waterloo': [0,0,0,1,0],
+        'Edinburgh': [0,0,0,0,1]
+    }
+
     def __call__(self, data):
         loc = (data['latitude'], data['longitude'])
 
         best_guess_city = None
         distance_guess = float('inf')
 
-        for city, center in self.location.items():
+        for city, center in self.locations.items():
             val = (center[0]-loc[0])**2 + (center[1]-loc[1])**2
             if val < distance_guess:
                 distance_guess = val
                 best_guess_city = city
 
-        return best_guess_city
+        return best_guess_city, self.cityCodes[best_guess_city]
 
 
-def rating_extractor(data):
+def RatingExtractor(data):
     return [data['review_count'], data['stars']]
+
+
