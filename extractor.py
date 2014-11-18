@@ -34,7 +34,8 @@ class AmbianceExtractor(object):
                     index = self.all_ambiances.index(ambiance)
                 except ValueError:
                     continue
-                vector[index] = 1
+                if ambiances[ambiance]:
+                    vector[index] = 1
 
         return vector
 
