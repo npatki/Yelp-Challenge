@@ -155,4 +155,31 @@ def trainSVM(X, Y, svmType = 'one-vs-the-rest', kernel = 'rbf', gamma = 1.0,\
 
 
 if __name__ == "__main__":
-    solver()       
+    
+    # load user features for clustering
+    Xdata = []
+    filename = '../data/user_features_1.csv'
+
+    f = open(filename,'r')
+    lines = f.readlines()
+    f.close()
+    for line in lines:
+        featureVector = []
+        words = line.split()
+        for word in words[1:]:
+            featureVector.append( float(word) )
+        Xdata.append(featureVector)
+
+    # run clustering algorithm on X data
+    numclusters = 6
+    model = cluster(Xdata, numclusters)
+
+    classes = model.predict(Xdata)
+
+    output = np.zeros(numclusters)
+
+    for pt in classes:
+        output[pt] += 1
+
+    print "Cluster results:"
+    print output

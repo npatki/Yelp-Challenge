@@ -4,7 +4,6 @@ import json
 import numpy as np
 import scipy as sp
 import pprint
-from extractor import *
 import solver
 #from partitioner import *
 
