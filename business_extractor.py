@@ -29,6 +29,7 @@ OUT = [
 # TODO: run classification on users --> feature vectors
 # TODO: recalculate ratings + running the regression scripts
 feature_names = [
+    'ID',
     'casual_true', 'casual_false', 'casual_missing',
     'classy_true', 'classy_false', 'classy_missing',
     'divey_true', 'divey_false', 'divey_missing',
@@ -52,8 +53,8 @@ feature_names = [
     'tv_true', 'tv_false', 'tv_missing',
     'outdoor_true', 'outdoor_false', 'outdoor_missing',
     'waiter_true', 'waiter_false', 'waiter_missing',
-    'full_bar', 'beer_and_wine', 'none',
-    'casual', 'dressy', 'formal',
+    'full_bar', 'beer_and_wine', 'none', 'alcohol_missing',
+    'casual', 'dressy', 'formal', 'attire_missing',
     'Mexican','American_Traditional', 'Fast_Food',
     'Pizza', 'Sandwiches', 'Nightlife', 'Bars', 'Food',
     'American_New', 'Italian', 'Chinese', 'Burgers',
@@ -333,12 +334,11 @@ if __name__ == '__main__':
 
     for i, BIZ in enumerate(BUSINESSES):
         out = open(OUT[i], 'a+')
-        out.write(names_string + '\n')
 
         with open(BIZ) as f:
             for line in f:
                 data = json.loads(line)
-                vector = []
+                vector = [data['business_id']]
 
                 for extractor in extractors:
                     vector.extend(extractor(data))
