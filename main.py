@@ -5,6 +5,7 @@ import numpy as np
 import scipy as sp
 import pprint
 from extractor import *
+import solver
 #from partitioner import *
 
 
@@ -77,6 +78,74 @@ def main():
 
     print "More than 10 restaurant reviews = " + str(revX) + "/" + str(nusers) + " users"
     print "Average restaurant review number = " + str( float(revtotal) / float(nusers) ) + '\n'
+
+
+    # find clusters in business data
+    numBusinessClusters = 8
+    bClusterPredictor = solver.cluster(businessDict.values(), numBusinessClusters)
+
+    # determine business clusters, store in dictionary
+    bClusters = bClusterPredictor.predict(businessDict.values())
+    bClusterDict = dict( zip(businessDict.keys(), bClusters) )
+
+    # required number of reviews to be accepted
+    reqReviews = 10
+
+    # form reduced review dictionary
+    reducedUserIDs = []
+    reducedUserRevs = []
+    for user in reviewDict.keys():
+        relevantReviews = []
+        reviews = reviewDict[user]
+        for review in reviews:
+            business = review[0]
+            if business in businessDict:
+                relevantReviews.append(review)
+        if len(relevantReviews) >= reqReviews:
+            reducedUserIDs.append(user)
+            reducedUserRevs.append(relevantReviews)
+    
+    reducedReviewDict = dict( zip(reducedUserIDs, reducedUserRevs) )
+
+    # form feature vector for classifying users based on ratings for clustered
+    # businesses
+    featureVectors = []
+    for (userID, userReviews) in zip(reducedUserIDs, reducedUserRevs):
+        featureVector = np.zeros(2*numBusinessClusters)
+        for review in userReviews:
+            
+            # load information
+            businessID = review[0]
+            rating = review[1]
+            
+            # add data to correct indexes in feature vector
+            index = bClusterDict[businessID]
+            featureVector[index] += 1
+            featureVector[numBusinessClusters + index] += rating
+
+        for i in xrange(numBusinessClusters):
+            
+            if featureVector[i] == 0:
+                featureVector[numBusinessClusters + i] = 0 # FIXME
+            else:
+                featureVector[numBusinessClusters + i] /= featureVector[i]
+                avgRating = userDict[userID][1]
+                featureVector[numBusinessClusters + i] -= avgRating
+
+        featureVectors.append(featureVector)
+
+    # find clusters in user data
+    numUserClusters = 4
+    uClusterPredictor = solver.cluster( featureVectors, numUserClusters )
+
+    # output clusters
+    uClusters = uClusterPredictor.predict(featureVectors)
+    uClusterResults = np.zeros(numUserClusters)
+    for uCluster in uClusters:
+        uClusterResults[uCluster] += 1
+
+    print "Cluster results = " + str(uClusterResults)
+    
 
 
 """

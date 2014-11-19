@@ -60,7 +60,7 @@ feature_names = [
     'American_New', 'Italian', 'Chinese', 'Burgers',
     'Breakfast_Brunch', 'Japanese',
     'phoenix', 'las_vegas', 'madison', 'waterloo', 'edinburgh',
-    'review_count', 'stars'
+    'distance','review_count', 'stars'
 ]
 names_string = ' '.join(feature_names)
 
@@ -334,6 +334,7 @@ if __name__ == '__main__':
 
     for i, BIZ in enumerate(BUSINESSES):
         out = open(OUT[i], 'a+')
+        out.write(names_string + '\n')
 
         with open(BIZ) as f:
             for line in f:

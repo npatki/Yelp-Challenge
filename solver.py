@@ -3,6 +3,7 @@ import parser
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import svm
+from sklearn.cluster import KMeans
 
 # SVM solver for city classification problem
 def classify(X,Y):
@@ -26,6 +27,19 @@ def classify(X,Y):
     gamma = sweepOptimalVal(trainX, valX, trainY, valY, svmType, param = 'gamma', \
             minVal = -3, maxVal = 3, steps = 2, stepType = 'log')
     #gamma = findOptimalVal(trainX, valX, trainY, valY, param = 'gamma')
+
+
+# Find N clusters in X data
+def cluster(X,N):
+
+    kcluster = KMeans(n_clusters=N, init='k-means++', n_init=10,\
+            max_iter=300, tol=0.0001, precompute_distances=True, verbose=0,\
+            random_state=None, copy_x=True, n_jobs=1)
+
+    kcluster.fit(X)
+    
+    return kcluster
+
 
             
 # sweeps through possible values for a parameter and plots the accuracy
