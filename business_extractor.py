@@ -14,10 +14,10 @@ BUSINESSES = [
 ]
 
 OUT = [
-    '../data/biz_features_0.json',
-    '../data/biz_features_1.json',
-    '../data/biz_features_2.json',
-    '../data/biz_features_3.json'
+    '../data/biz_features_0.csv',
+    '../data/biz_features_1.csv',
+    '../data/biz_features_2.csv',
+    '../data/biz_features_3.csv'
 ]
 
 # TODO: script that uses the extractors and puts the input vectors into a file
@@ -28,6 +28,40 @@ OUT = [
 #       user ID, features -> [italian_avg, num_italian, ... num_reviews, variance]
 # TODO: run classification on users --> feature vectors
 # TODO: recalculate ratings + running the regression scripts
+feature_names = [
+    'casual_true', 'casual_false', 'casual_missing',
+    'classy_true', 'classy_false', 'classy_missing',
+    'divey_true', 'divey_false', 'divey_missing',
+    'hipster_true', 'hipster_false', 'hipster_missing',
+    'intimate_true', 'intimate_false', 'intimate_missing',
+    'romantic_true', 'romantic_false', 'romantic_misssing',
+    'toursity_true', 'touristy_false', 'touristy_missing',
+    'trendy_true', 'trending_false', 'trendy_missing',
+    'upscale_true', 'upscale_false', 'upscale_missing',
+    'breakfast_true', 'breakfast_false', 'breakfast_missing',
+    'brunch_true', 'brunch_false', 'brunch_missing',
+    'dessert_true', 'dessert_false', 'dessert_missing',
+    'dinner_true', 'dinner_false', 'dinner_missing',
+    'latenight_true', 'latenight_false', 'latenight_missing',
+    'lunch_true', 'lunch_false', 'lunch_missing',
+    'credit_true', 'credit_false', 'credit_missing',
+    'delivery_true', 'delivery_false', 'delivery_missing',
+    'dogs_true', 'dogs_false', 'dogs_missing',
+    'kids_true', 'kids_false', 'kids_missing',
+    'groups_true', 'groups_false', 'groups_missing',
+    'tv_true', 'tv_false', 'tv_missing',
+    'outdoor_true', 'outdoor_false', 'outdoor_missing',
+    'waiter_true', 'waiter_false', 'waiter_missing',
+    'full_bar', 'beer_and_wine', 'none',
+    'casual', 'dressy', 'formal',
+    'Mexican','American_Traditional', 'Fast_Food',
+    'Pizza', 'Sandwiches', 'Nightlife', 'Bars', 'Food',
+    'American_New', 'Italian', 'Chinese', 'Burgers',
+    'Breakfast_Brunch', 'Japanese',
+    'phoenix', 'las_vegas', 'madison', 'waterloo', 'edinburgh',
+    'review_count', 'stars'
+]
+names_string = ' '.join(feature_names)
 
 class AmbianceExtractor(object):
 
@@ -299,6 +333,7 @@ if __name__ == '__main__':
 
     for i, BIZ in enumerate(BUSINESSES):
         out = open(OUT[i], 'a+')
+        out.write(names_string + '\n')
 
         with open(BIZ) as f:
             for line in f:
