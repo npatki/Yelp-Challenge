@@ -333,7 +333,7 @@ if __name__ == '__main__':
     ]
 
     for i, BIZ in enumerate(BUSINESSES):
-        out = open(OUT[i], 'a+')
+        out = open(OUT[i], 'w')
         out.write(names_string + '\n')
 
         with open(BIZ) as f:
