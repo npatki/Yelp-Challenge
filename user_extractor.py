@@ -144,7 +144,6 @@ if __name__ == '__main__':
         'Pizza', 'Sandwiches', 'Nightlife', 'Bars', 'Food',
         'American_New', 'Italian', 'Chinese', 'Burgers',
         'Breakfast_Brunch', 'Japanese']
-
     
     # put restaurant types into dictionary
     ntypes = len(restaurant_types)
@@ -160,7 +159,6 @@ if __name__ == '__main__':
         business_file = business_file_base + str(n) + ".csv"
         businessDict.update( \
                 LoadBusinessInformation(business_file, restaurant_types) )
-    
 
     # create header and define list of lines to output to files
     outputLines = []

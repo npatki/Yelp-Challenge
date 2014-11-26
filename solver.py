@@ -5,181 +5,103 @@ import matplotlib.pyplot as plt
 from sklearn import svm
 from sklearn.cluster import KMeans
 
-# SVM solver for city classification problem
-def classify(X,Y):
 
-    # define SVM type
-    svmType = "one-against-one"
+"""
+Determines user clusters
+"""
+def determineClusters(filename, num_clusters = 6, analyze_clusters = False):
 
-    # form train, validation, and test datasets
-    trainSize = len(X)/2
-    valSize = len(X)/4
-    testSize = len(X) - len(X)/2 - len(X)/4
+    # initialize vectors
+    user_IDs = []
+    feature_vectors = []
 
-    trainX = X[0:trainSize-1]
-    trainY = Y[0:trainSize-1]
-    valX = X[trainSize:trainSize+valSize-1]
-    valY = Y[trainSize:trainSize+valSize-1]
-    testX = X[valSize:valSize+testSize-1]
-    testY = Y[valSize:valSize+testSize-1]
+    # load user data from CSV file
+    with open(filename, 'rb') as csvfile:
 
-    # sweep space to find optimal parameter gamma
-    gamma = sweepOptimalVal(trainX, valX, trainY, valY, svmType, param = 'gamma', \
-            minVal = -3, maxVal = 3, steps = 2, stepType = 'log')
-    #gamma = findOptimalVal(trainX, valX, trainY, valY, param = 'gamma')
+        # read all lines in the file
+        lines = csvfile.readlines()
 
+        # read the header
+        header = lines[0].split()
 
-# Find N clusters in X data
-def cluster(X,N):
+        # save user IDs, load feature vectors
+        for line in lines[1:]:
 
-    kcluster = KMeans(n_clusters=N, init='k-means++', n_init=10,\
+            # load in line elements as strings
+            elements = line.split()
+            user_IDs.append( elements[0] )
+
+            # convert feature vector arguments to floats and add to vector
+            feature_vector = np.zeros( len(elements) - 1)
+            for (i, element) in enumerate(elements[1:]):
+                feature_vector[i] += float(element)
+
+            # add feature vector to list
+            feature_vectors.append(feature_vector)
+
+    # train data using k-means clustering ( can change later )
+    kcluster = KMeans(n_clusters=num_clusters, init='k-means++', n_init=10,\
             max_iter=300, tol=0.0001, precompute_distances=True, verbose=0,\
             random_state=None, copy_x=True, n_jobs=1)
+    kcluster.fit(feature_vectors)
+    clusters = kcluster.predict(feature_vectors)
 
-    kcluster.fit(X)
+    # output cluster information if requested
+    if analyze_clusters:
+        printClusterStats(clusters, num_clusters, feature_vectors, header)
+
+    # form dictionary of (user_id, cluster)
+    cluster_dictionary = dict( zip(user_IDs, clusters) )
+
+    return cluster_dictionary
+
+"""
+Prints cluster information
+"""
+def printClusterStats(clusters, num_clusters, feature_vectors, header):
+
+    # determine the number of users in each cluster
+    occurances = np.zeros(num_clusters)
+    for cluster in clusters:
+        occurances[cluster] += 1
     
-    return kcluster
-
-
-            
-# sweeps through possible values for a parameter and plots the accuracy
-# for valdiation and training for values tested
-def sweepOptimalVal(trainX, valX, trainY, valY, svmType, param = 'lambda', \
-        minVal = -6, maxVal = 3, steps = 100, stepType = 'log'):
+    # display number of users in each cluster
+    for i in xrange(num_clusters):
+        print "Number of users in cluster " + str(i) + " = " + \
+                str(occurances[i])
     
-    # check if logarithmic or linear spacing
-    if stepType == 'log':
-        testVals = np.logspace(minVal,maxVal,steps)
-    elif stepType == 'lin':
-        testVals = np.linspace(minVal,maxVal,steps)
-    else:
-        print "Error: unknown stepType for sweepOptimalVal function call"
-        print "Please slect 'log' or 'lin'"
-        exit()
+    # create arrays for characteristic feature vectors
+    rep_feature_vectors = []
+    feature_vector_length = len(feature_vectors[0])
+    
+    for i in xrange(num_clusters):
+        rep_feature_vectors.append( np.zeros(feature_vector_length) )
 
-    # create vectors to record accuracies
-    trainAccuracy = np.zeros(steps)
-    valAccuracy = np.zeros(steps)
-
-    # initialize classifier
-    clf = []
-
-    # FIXME: Now only testing gamma
-    for i,val in enumerate(testVals):
-
-        print "\nTraining with gamma = " + str(val)
-
-        # check SVM type
-        if svmType == 'one-vs-the-rest':
-            clf = svm.LinearSVC(C=1.0, class_weight=None, dual=True,\
-                fit_intercept=True, intercept_scaling=1, loss='l2', \
-                multi_class='ovr', penalty='l2', random_state=None, \
-                    tol=0.0001, verbose=0)
-            clf.fit(trainX, trainY)
-
-        elif svmType == 'one-against-one':
-            clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, \
-                    degree=3, gamma=val, kernel='rbf', max_iter=-1, \
-                    probability=False, random_state=None, shrinking=True, \
-                    tol=0.001, verbose=False)
-            clf = svm.SVC(gamma = val)
-            clf.fit(trainX, trainY)
-
-        else:
-            print "Error: unrecognized svmType"
-            print "Please select 'one-vs-the-rest' or 'one-against-one'"
-            exit()
+    # determine the characteristic (average) feature vector for each cluter
+    for i in xrange(len(feature_vectors)):
         
-        # record training and validation accuracy
-        trainAccuracy[i] = \
-               getClassificationAccuracy(clf.predict(trainX), trainY)
-        print "Training Accuracy = " + str(trainAccuracy[i])
-        valAccuracy[i] = \
-               getClassificationAccuracy(clf.predict(valX), valY)
-        print "Validaiton Accuracy = " + str(valAccuracy[i])
+        # load relevant information
+        cluster = clusters[i]
+        feature_vector = feature_vectors[i]
 
-    # plot training results
-    if stepType == 'log':
-        plt.semilogx(testVals, trainAccuracy)
-    else:
-        plt.plot(testVals, trainAccuracy)
+        # add feature vector attributes to cluster
+        rep_feature_vectors[cluster] += feature_vector / occurances[cluster]
 
-    plt.xlabel(param)
-    plt.ylabel("Training Accuracy")
-    plt.show()
-   
-    # plot validation results
-    if stepType == 'log':
-        plt.semilogx(testVals, valAccuracy)
-    else:
-        plt.plot(testVals, valAccuracy)
-    
-    plt.xlabel(param)
-    plt.ylabel("Validation Accuracy")
-    plt.show()
-
-    return testVals[np.argmin(valAccuracy)]
-
-
-# determines the classification accuracy of Yprime with actual data Y
-def getClassificationAccuracy(Yprime, Y):
-    N = len(Y)
-    success = 0
-    for i in xrange(N):
-        if Yprime[i] == Y[i]:
-            success += 1
-    return float(success) / float(N)
-
-# function to train SVM data
-def trainSVM(X, Y, svmType = 'one-vs-the-rest', kernel = 'rbf', gamma = 1.0,\
-        C = 1.0):
-
-    # initialize clf
-    clf = None
-
-    # check SVM type
-    if svmType == 'one-vs-the-rest':
-        clf = svm.LinearSVC(C=1.0, class_weight=None, dual=True,\
-            fit_intercept=True, intercept_scaling=1, loss='l2', \
-            multi_class='ovr', penalty='l2', random_state=None, \
-            tol=0.0001, verbose=0)
-        clf.fit(X, Y)
-
-    elif svmType == 'one-against-one':
-        clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, \
-                degree=3, gamma=100.0, kernel='rbf', max_iter=-1, \
-                probability=False, random_state=None, shrinking=True, \
-                tol=0.001, verbose=False)
-        clf.fit(X, Y)
-   
-
+    # normalize feature vectors by number of elements and print to screen
+    for i in xrange(num_clusters):
+        
+        #rep_feature_vectors[i] /= occurances[i]
+        
+        print "_______________________________________________"
+        print "Characteristic features for cluster " + str(i) + ":"
+        
+        rep_feature_vector = rep_feature_vectors[i]
+        for feature_name, feature_val in zip(header[1:], rep_feature_vector):
+            print feature_name + " = " + str(feature_val)
 
 if __name__ == "__main__":
     
-    # load user features for clustering
-    Xdata = []
-    filename = '../data/user_features_1.csv'
+    # run clustering algorithm on for first file
+    user_clusters = determineClusters( "../data/user_features_0.csv", 6, 
+            analyze_clusters = True)
 
-    f = open(filename,'r')
-    lines = f.readlines()
-    f.close()
-    for line in lines:
-        featureVector = []
-        words = line.split()
-        for word in words[1:]:
-            featureVector.append( float(word) )
-        Xdata.append(featureVector)
-
-    # run clustering algorithm on X data
-    numclusters = 6
-    model = cluster(Xdata, numclusters)
-
-    classes = model.predict(Xdata)
-
-    output = np.zeros(numclusters)
-
-    for pt in classes:
-        output[pt] += 1
-
-    print "Cluster results:"
-    print output
