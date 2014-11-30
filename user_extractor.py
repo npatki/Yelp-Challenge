@@ -103,7 +103,7 @@ stored as (user_id, [business_id, stars])
 """
 def LoadReviewInformation(review_file):
 
-    print "Loading review dicitonary..."
+    print "Loading review dictionary..."
 
     # initialize dictionary of user information
     reviewDict = dict()
@@ -248,7 +248,7 @@ if __name__ == '__main__':
     # print output data to partioned files
     for n in range(num_user_partitions):
         writeLines = outputLines[n*numLines:(n+1)*numLines]
-        with open("../data/user_features.csv", 'w') as out:
+        with open("../data/user_features_%d.csv" % n, 'w') as out:
             out.write(' '.join((str(j) for j in header)) + '\n')
             for vector in writeLines:
                 out.write(' '.join((str(j) for j in vector)) + '\n')

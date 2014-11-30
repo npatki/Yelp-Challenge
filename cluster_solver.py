@@ -1,5 +1,5 @@
 from collections import defaultdict
-from sklearn import linear_model
+from sklearn import linear_model, ensemble
 from user_extractor import LoadReviewInformation
 
 import numpy as np
@@ -7,6 +7,8 @@ import numpy as np
 
 REVIEW_FILE = '../data/yelp_academic_dataset_review.json'
 CLUSTER_BASE = '../data/cluster_'
+
+reviews = LoadReviewInformation(REVIEW_FILE)
 
 
 def rerate_businesses(cluster_number):
@@ -23,25 +25,33 @@ def rerate_businesses(cluster_number):
 
     # create the set of users we'll be looking at
     cluster_file = CLUSTER_BASE + str(cluster_number) + '.txt'
+
     user_set = set()
 
     with open(cluster_file, 'r') as f:
         for line in f:
             user_set.add(line.strip())
 
-    reviews = LoadReviewInformation(REVIEW_FILE)
+    return compute_rankings(user_set)
+
+def compute_rankings(user_set):
+    """Method that recalculates rankings of a business to reflect
+    only the user IDs that are in user_set.
     
+    :param user_set: a set containing strings representing user IDs
+
+    :returns a dictionary mapping biz_id --> avg rating for only
+        the users in user_set"""
     # intermediate dictionary that maps biz_id --> list of ratings
     # given to it by members of user_set
     ratings = defaultdict(list)
-    
+
     for user in reviews:
         if user in user_set:
             for biz, rating in reviews[user]:
                 ratings[biz].append(rating)
-
-    # the output mapping maps biz_id --> average of the list
-    # of ratings given in the ratings map
+    
+    # the output should map biz_id --> average of the list
     new_ratings = {}
     for biz, values in ratings.items():
         new_ratings[biz] = sum(values)/float(len(values))
