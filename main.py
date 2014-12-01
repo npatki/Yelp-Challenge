@@ -1,6 +1,6 @@
 from collections import defaultdict
 from sklearn import (
-    cluster, linear_model, ensemble, neighbors, preprocessing
+    cluster, linear_model, ensemble, neighbors, preprocessing, mixture
 )
 from util import *
 import numpy as np
@@ -49,10 +49,60 @@ def users_validation(predictor, maximum=float('inf')):
 
     return total_error/float(total_users)
 
-def gaussianMixture():
-    # TODO: follow the overall mold of kNeighbors and kMeans
-    # to perform this task
-    pass
+def gaussianMixture(num_clusters, learner):
+ 
+    """Fits a gaussian mixture model for users, taking the maximum
+    likelihood estimate to determine the cluster before learning 
+    for different groups.
+
+    :param num_clusters: an int representing the number of gaussians
+    :param learner: a function that takes in a set of user IDs and
+                    outputs a prediction function that's capable
+                    of inferring a user's rating.
+                    See methods below.
+    :returns a function that can take in a user vector and user id,
+             and outputs both the guessed rating and the actual rating
+             for each restaurant the user has reviewed."""
+
+    vectors, ID = get_user_vectors('train')
+    GMM = mixture.GMM(n_components=num_clusters)
+    
+    # scale features to mean of 0 and standard devaition 1
+    scaler = preprocessing.StandardScaler().fit(vectors)
+    scaled_vectors = scaler.transform(vectors)
+    
+    GMM.fit(scaled_vectors)
+
+    classes = GMM.predict(scaled_vectors)
+
+    # create a dictionary where a cluster # maps to a list of
+    # user IDs belonging to that cluster
+    groups = defaultdict(list)
+    
+    for i, v in enumerate(classes):
+        groups[v].append(ID[i])
+
+    # these are the corresponding functions to call for each group
+    predictors = [0]*num_clusters
+
+    for g in groups:
+        user_set = set(groups[g])
+        predictors[g] = learner(user_set)
+    
+    # this is a function that does the end-to-end prediction:
+    # first find the cluster the user belongs to
+    # then find all the restauratns this user has gone to and
+    # see how the predictor's guesses compare
+    def fn(user_vector, user_id):
+        scaled_vector = scaler.transform(user_vector)
+        c = GMM.predict([scaled_vector])[0]
+        ratings = compute_ratings(set([user_id]))
+
+        inp, actual = get_biz_vectors('all', ratings)
+        guess = predictors[c](inp)
+        return guess, actual
+
+    return fn
 
 def kNeighbors(n_neighbors, learner):
     """Use the k nearest-neighbors of the input vector to learn
@@ -110,7 +160,7 @@ def kMeans(num_clusters, learner):
     kMeans = cluster.KMeans(n_clusters=num_clusters)
     
     # scale features to mean of 0 and standard devaition 1
-    scaler = preprocessing.StandardScaler().fit(feature_vectors)
+    scaler = preprocessing.StandardScaler().fit(vectors)
     scaled_vectors = scaler.transform(vectors)
     
     kMeans.fit(scaled_vectors)
@@ -207,10 +257,11 @@ def bayesian_ridge(user_set):
 
 if __name__ == '__main__':
     # uncomment one of these to analyze
-    predictor = kNeighbors(200, bayesian_ridge)
+    # predictor = kNeighbors(200, bayesian_ridge)
     # predictor = kMeans(2, random_forests)
     # predictor = kMeans(2, lasso)
     # predictor = kMeans(2, mle)
     # predictor = kMeans(2, bayesian_ridge)
+    predictor = gaussianMixture(2, random_forests)
 
     print users_validation(predictor, maximum=20)
