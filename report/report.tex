@@ -39,7 +39,14 @@ For Yelp's data set, we find that a collaborative filter would not take into acc
 An additional challenge and motivation for the problem is analyzing the given data to determine relevant features. Yelp offers a vast array of data ranging from the ambiance in each restaurant, to the number of times a user was voted funny by their peers. Furthermore, the 5 metropolitan areas are diverse in their offerings of food, and users may show preferences towards particular types of restaurants. We spend a significant time engineering feature vectors to reflect the variety of information. After the learning process, this enables us to comment on significant features to reveal trends in user preferences. 
 
 \subsection{Problem Formulation}
-The overall goal is to accept, as inputs, a user and business, and to output a floating point value in $[1, 5]$ that predicts what the user will rate the business. We model a hidden factor by training user data to roughly categorize similar users in an unsupervised setting. Based on these similarites, we are able to train different models in a supervised setting for different categories of users. For example, assume a particular group we learn contains users who enjoy restaurants with a hipster ambiance, which means restaurants matching this profile will achieve higher ratings by them. Then, when we train business data for this particular group, the expected output is the average rating given only by its members. This means that a different group may be trained to rate the same business differently, which shows the users have different broad preferences. Figure \ref{fig:system} shows an overall schematic of the system.\\
+The overall goal is to accept, as inputs, a user and business, and to output a floating point value in $[1, 5]$ that predicts what the user will rate the business. We do this using two steps.
+
+\begin{enumerate}
+\item Categorize the users into groups who have groughly similar interests. This is the hidden factor.
+\item Separetely train each category to learn the average business rating for only the users in that group.
+\end{enumerate}
+
+For example, assume a particular group we learn in step 1 contains users who enjoy restaurants with a hipster ambiance, which means restaurants matching this profile will achieve higher ratings by them. In step 2, the expected output is the average rating given only by its members. This means that another group may be trained to rate the same business differently, which shows its users have different broad preferences. Figure \ref{fig:system} shows an overall schematic of the system.\\
 
 \begin{figure}[h!]
     \centering
@@ -48,25 +55,35 @@ The overall goal is to accept, as inputs, a user and business, and to output a f
     \label{fig:system}
 \end{figure} 
 
-Modeling the hidden factor is an unsupervised learning problem, because we are constructing groups for which we have no prior labels. However, after learning the hidden factor, the remaining problem is fully supervised because we are presented with a full list of ratings for each business. The full system is a combination of the two factors: Given a user, we first predict the hidden factor that determines a user's broad category. Next, we use the category to learn and test the actual ratings. With this setup, we can indirectly supervise the hidden factor to determine hyperparameters, and comment on overall accuracy. The overall complexity grows as we add a train-validate-test strategy for the supervised factor recursively within the overall system.
+Modeling the hidden factor in step 1 is an unsupervised learning problem, because we are constructing groups for which we have no prior labels. However, after learning the hidden factor, the step 2 is fully supervised because we are presented with a full list of ratings for each business. Considering the full system, we see that we can perform an end-to-end test given a user, a business, and an expected rating. This allows us to indirectly supervise the hidden factor to determine the appropriate hyperparameters for step 1. The overall complexity of our system grows, and we perform a train-validate-test strategy recursively for step 2 within the context of the overall system.
 
-\subsection{Features}
-\subsubsection{User Data}
-\subsubsection{Business Data}
+In the next sections, we discuss constructing the feature vectors that create the user and business data shown in Figure \ref{fig:system}. We describe multiple approaches to implement both factors, and describe our train-validate-testing strategy. Finally, we compare the different methodologies in terms of accuracy and computational time.
+
+\section{Features}
+\subsection{User Data}
+\subsection{Business Data}
 
 \section{Methodology}
-\subsection{Hidden Clusters}
+\subsection{Hidden Factor}
 \subsubsection{K-Means Clustering}
 \subsubsection{K-Neighbors}
 \subsubsection{Mixture of Gaussians}
-
-\subsection{Regression}
-\subsubsection{Maximum Liklihood Estimate}
-\subsubsection{Bayesian Ridge}
+\subsection{Second Factor}
+\subsubsection{MLE}
 \subsubsection{Lasso}
-\subsubsection{Random Forest}
+\subsubsection{Bayesian Ridge}
+\subsubsection{Random Forests}
 
+\section{Experiments}
+\subsection{Setup}
+\subsection{Results}
 
-\section{Results}
+% \subsection{Regression}
+% \subsubsection{Maximum Liklihood Estimate}
+% \subsubsection{Bayesian Ridge}
+% \subsubsection{Lasso}
+% \subsubsection{Random Forest}
+
+\section{References}
 
 \end{document}
