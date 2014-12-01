@@ -1,0 +1,72 @@
+% \documentclass{report}
+\documentclass[11pt]{article}
+\setlength{\columnsep}{0.8cm}
+\usepackage{fullpage}
+\usepackage[english]{babel}
+\usepackage{blindtext}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+% \pagenumbering{gobble}
+
+% \setlength{\parindent}{0pt}
+% \setlength{\intextsep}{0cm}
+
+\author{6.867 Homework 2 and 3}
+\begin{document}
+\noindent\centerline{\LARGE{Two-Factor Recommendation Models}}
+\noindent\centerline{}
+\noindent\centerline{}
+\noindent\centerline{Fall 2014}
+\noindent\centerline{6.867 Final Project}
+\noindent\centerline{Geoffrey Gunow and Neha Patki}
+
+\section{Introduction}
+In 2014, Yelp published an academic dataset containing over 42,000 businesses that span 5 metropolitan areas. Types of data included the full star rating, and reviews for each business, as well as aggregated statistics for each user's reviews. In this project, we use the dataset to formulate, model, and solve the problem of estimating a user's overall review for a business, given the user's history. The algorithm we present estimates a single rating, but can be applied to multiple business to determine the best one for a given user. Thus, our problem falls in the category of recommendation systems.
+
+\subsection{Motivation}
+Yelp does not currently give personal recommendations to its users, but the data it collects about reviews and users make it possible to learn a user's preferences. Typical approaches fall in two categories. Collaborative filtering analyzes similarities between different users, and the items they rate highly. Content-based filtering focuses on a single user's personal history to determine individual likes and dislikes.
+
+For Yelp's data set, we find that a collaborative filter would not take into account an individual's own preferences for cuisines and restaurant sub-categories. However, we cannot use pure content-based filtering because a single user may not have reviewed a significant number of restaurants, making the data points sparse. This motivates us to use a hybrid approach in estimation, where we combine a user's history with a cluster-based approach meant to account for the sparsity of data points. We introduce a hidden factor that models an overall group of similar users, and use this factor to separately learn preferences for each group.
+
+An additional challenge and motivation for the problem is analyzing the given data to determine relevant features. Yelp offers a vast array of data ranging from the ambiance in each restaurant, to the number of times a user was voted funny by their peers. Furthermore, the 5 metropolitan areas are diverse in their offerings of food, and users may show preferences towards particular types of restaurants. We spend a significant time engineering feature vectors to reflect the variety of information. After the learning process, this enables us to comment on significant features to reveal trends in user preferences. 
+
+\subsection{Problem Formulation}
+The overall goal is to accept, as inputs, a user and business, and to output a floating point value in $[1, 5]$ that predicts what the user will rate the business. We model a hidden factor by training user data to roughly categorize similar users in an unsupervised setting. Based on these similarites, we are able to train different models in a supervised setting for different categories of users. For example, assume a particular group we learn contains users who enjoy restaurants with a hipster ambiance, which means restaurants matching this profile will achieve higher ratings by them. Then, when we train business data for this particular group, the expected output is the average rating given only by its members. This means that a different group may be trained to rate the same business differently, which shows the users have different broad preferences. Figure \ref{fig:system} shows an overall schematic of the system.\\
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth, height=5.75cm]{architecture}
+    \caption{The architecture for the overall system. Inputs are colored blue while the output is shown in green. Dotted lines represents inputs during training, and solid lines represent the flow of information at testing time. The hidden factor is used to select a model, or a mixture of models, that the business data is tested on. The output is the rating.}
+    \label{fig:system}
+\end{figure} 
+
+Modeling the hidden factor is an unsupervised learning problem, because we are constructing groups for which we have no prior labels. However, after learning the hidden factor, the remaining problem is fully supervised because we are presented with a full list of ratings for each business. The full system is a combination of the two factors: Given a user, we first predict the hidden factor that determines a user's broad category. Next, we use the category to learn and test the actual ratings. With this setup, we can indirectly supervise the hidden factor to determine hyperparameters, and comment on overall accuracy. The overall complexity grows as we add a train-validate-test strategy for the supervised factor recursively within the overall system.
+
+\subsection{Features}
+\subsubsection{User Data}
+\subsubsection{Business Data}
+
+\section{Methodology}
+\subsection{Hidden Clusters}
+\subsubsection{K-Means Clustering}
+\subsubsection{K-Neighbors}
+\subsubsection{Mixture of Gaussians}
+
+\subsection{Regression}
+\subsubsection{Maximum Liklihood Estimate}
+\subsubsection{Bayesian Ridge}
+\subsubsection{Lasso}
+\subsubsection{Random Forest}
+
+
+\section{Results}
+
+\end{document}
