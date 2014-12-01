@@ -1,5 +1,7 @@
 from collections import defaultdict
-from sklearn import cluster, linear_model, ensemble
+from sklearn import (
+    cluster, linear_model, ensemble, neighbors
+)
 from util import *
 import numpy as np
 
@@ -47,6 +49,50 @@ def users_validation(predictor, maximum=float('inf')):
 
     return total_error/float(total_users)
 
+def gaussianMixture():
+    # TODO: follow the overall mold of kNeighbors and kMeans
+    # to perform this task
+    pass
+
+def kNeighbors(n_neighbors, learner):
+    """Use the k nearest-neighbors of the input vector to learn
+    the user's likes/dislikes.
+
+    :param n_neighbors: an int representing the number of nearest
+                        neighbors to look at.
+    :param learner: a function that takes in a set of user IDs and
+                    output a prediction function that's capable of
+                    inferring a user's rating.
+    :returns a function that can take in a user vector and user id,
+             and output both the guessed rating and the actual rating
+             for each restaurant the user has reiewed"""
+
+    vectors, ID = get_user_vectors('train')
+    kNeighbors = neighbors.NearestNeighbors(n_neighbors)
+    # calling fit means these vectors will be returned with a query
+    # is made for the k nearest neighbors
+    kNeighbors.fit(vectors)
+
+    def fn(user_vector, user_id):
+        n_index = kNeighbors.kneighbors(user_vector, n_neighbors,
+            return_distance=False)
+        user_set = set()
+
+        # n_index[0] contains indicies which correspond to the n
+        # nearest users from the training set to user_vector
+        for i in n_index[0]:
+            user_set.add(ID[i])
+
+        # user the nearest neighbors to perform the learning
+        predictor = learner(user_set)
+        ratings = compute_ratings(set([user_id]))
+
+        inp, actual = get_biz_vectors('all', ratings)
+        guess = predictor(inp)
+
+        return guess, actual
+
+    return fn
 
 def kMeans(num_clusters, learner):
     """Perform K-Means clustering to sort the users before
@@ -155,9 +201,10 @@ def bayesian_ridge(user_set):
 
 if __name__ == '__main__':
     # uncomment one of these to analyze
-    predictor = kMeans(2, random_forests)
+    predictor = kNeighbors(200, bayesian_ridge)
+    # predictor = kMeans(2, random_forests)
     # predictor = kMeans(2, lasso)
     # predictor = kMeans(2, mle)
     # predictor = kMeans(2, bayesian_ridge)
 
-    print users_validation(predictor, maximum=250)
+    print users_validation(predictor, maximum=20)
