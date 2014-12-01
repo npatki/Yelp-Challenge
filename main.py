@@ -1,8 +1,6 @@
-from cluster_solver import (
-    compute_rankings, get_input_output, ensemble
-)
 from collections import defaultdict
-from sklearn import cluster, linear_model
+from sklearn import cluster, linear_model, ensemble
+from util import *
 import numpy as np
 
 """This is the main script that does the end-to-end testing.
@@ -22,132 +20,89 @@ import numpy as np
    Choose the desired # of clusters (hyperparameter).
 5. Report the overall test error."""
 
-mapping = {
-    'test': [0],
-    'validate': [1],
-    'train': [2, 3],
-    'all': [0, 1, 2, 3]
-}
 
-def get_biz_vectors(process, ratings):
-    partition_list = mapping[process]
-    X_out = []
-    Y_out = []
-
-    for i in partition_list:
-        filename = '../data/biz_features_%d.csv' % i
-        X, Y = get_input_output(ratings, filename)
-        X_out.extend(X)
-        Y_out.extend(Y)
-
-    return X_out, Y_out
-
-def get_user_vectors(process):
-    partition_list = mapping[process]
-    X_out = []
-    ID_out = []
-
-    for i in partition_list:
-        filename = '../data/user_features_%d.csv' % i
-        
-        with open(filename, 'rb') as csvfile:
-            lines = csvfile.readlines()
-            header = lines[0].split()
-
-            for line in lines[1:]:
-                elements = line.split()
-                ID_out.append(elements[0].strip())
-
-                vector = [float(j) for j in elements[15:]]
-                X_out.append(vector)
+def users_validation(predictor, maximum=float('inf')):
+    """Perform end-to-end analysis on the users validation set.
     
-    return X_out, ID_out
+    :param predictor: a function that takes in a user vector and
+                      user ID, and outputs the guessed rating as
+                      well as the actual rating for each restaurant
+                      the user has reviewed.
+    :param maximum: an optional int used to save time. Overall
+                    analysis is only done on this many users.
+    :returns a float representing the average error made in rating
+             per user"""
+    test_vectors, ID = get_user_vectors('validate')
+    total_users = min(len(ID), maximum)
+    total_error = 0.0
 
-def get_error(Y_actual, Y_predicted):
-    Y_actual = np.array(Y_actual)
+    ct = 0
+    for i, v in enumerate(ID):
+        ct += 1
+        if ct == maximum:
+            break
 
-    Y_predicted[Y_predicted > 5.0] = 5.0
-    Y_predicted[Y_predicted < 1.0] = 1.0
+        guess, actual = predictor(test_vectors[i], v)
+        total_error += get_error(actual, guess)
 
-    return sum(abs(Y_predicted-Y_actual))/len(Y_actual)
+    return total_error/float(total_users)
 
-def best_clusterize(num_clusters, simple=False):
+
+def kMeans(num_clusters, learner):
+    """Perform K-Means clustering to sort the users before
+    learning for different groups.
+
+    :param num_clusters: an int representing the number of clusters
+    :param learner: a function that takes in a set of user IDs and
+                    outputs a prediction function that's capable
+                    of inferring a user's rating.
+                    See methods below.
+    :returns a function that can take in a user vector and user id,
+             and outputs both the guessed rating and the actual rating
+             for each restaurant the user has reviewed."""
     vectors, ID = get_user_vectors('train')
     kMeans = cluster.KMeans(n_clusters=num_clusters)
-
     kMeans.fit(vectors)
 
     classes = kMeans.predict(vectors)
-    groups = defaultdict(list)
 
+    # create a dictionary where a cluster # maps to a list of
+    # user IDs belonging to that cluster
+    groups = defaultdict(list)
+    
     for i, v in enumerate(classes):
         groups[v].append(ID[i])
 
+    # these are the corresponding functions to call for each group
     predictors = [0]*num_clusters
 
     for g in groups:
         user_set = set(groups[g])
-
-        if simple:
-            predictors[g] = simple_predictor(user_set)
-        else:
-            # val, test, clf = get_best_alpha(user_set)
-            # clf = linear_model.BayesianRidge()
-            clf = ensemble.RandomForestRegressor()
-            rankings = compute_rankings(user_set)
-            X_train, Y_train = get_biz_vectors('train', rankings)
-            clf.fit(X_train, Y_train)
-            predictors[g] = clf.predict
-            # print val, test
-
-    test_vectors, ID = get_user_vectors('validate')
-
-    total_users = len(ID)
-    total_error = 0.0
-
-    ct = 0
-
-    for i, v in enumerate(ID):
-        ct += 1
-
-        if ct == 250:
-            break
-
-        ratings = compute_rankings(set([v]))
-        user_vector = test_vectors[i]
-        c = kMeans.predict(user_vector)[0]
-        
-        inp, actual = get_biz_vectors('all', ratings) 
-        guess = predictors[c](inp)
-        total_error += get_error(actual, guess)
-
-    print total_error/250
-        
-    # get biz_vectors for just the user
-    # predict for just the user
-
-def get_best_alpha(user_set):
-    alphas = np.arange(0.1, 1, 0.1)
-
-    best_val = float('inf')
-    best_clf = None
-    best_test = None
-
-    for alpha in alphas:
-        val, test, clf = lasso(user_set, alpha)
-        if val < best_val:
-            best_val = val
-            best_clf = clf
-            best_test = test
-
-    return best_val, best_test, best_clf
-
-def simple_predictor(user_set):
-    """Simple predictor as a baseline: just guess the average of everything in
-    the set."""
-    rankings = compute_rankings(user_set)
+        predictors[g] = learner(user_set)
     
-    avg = sum(rankings.values())/float(len(rankings))
+    # this is a function that does the end-to-end prediction:
+    # first find the cluster the user belongs to
+    # then find all the restauratns this user has gone to and
+    # see how the predictor's guesses compare
+    def fn(user_vector, user_id):
+        c = kMeans.predict(user_vector)[0]
+        ratings = compute_ratings(set([user_id]))
+
+        inp, actual = get_biz_vectors('all', ratings)
+        guess = predictors[c](inp)
+        return guess, actual
+
+    return fn
+
+######### These are the learning algorithms for regression #########
+# All of these take in a set of user IDs, perform the learning algo,
+# and return a function that's able to predict rating based on the
+# business feature vector
+
+def mle(user_set):
+    """Maximum liklihood estimate learner to use as a baseline."""
+    ratings = compute_ratings(user_set)
+    avg = sum(ratings.values())/float(len(ratings))
 
     def predict(vals):
         out = [avg]*len(vals)
@@ -155,26 +110,54 @@ def simple_predictor(user_set):
 
     return predict
 
-def lasso(user_set, alpha):
-    rankings = compute_rankings(user_set)
+def random_forests(user_set):
+    """Random forest learner."""
+    # TODO set hyperparameters using validation set
+    l = ensemble.RandomForestRegressor()
+    ratings = compute_ratings(user_set)
+    X_train, Y_train = get_biz_vectors('train', ratings)
+    l.fit(X_train, Y_train)
+    return l.predict
 
-    X_train, Y_train = get_biz_vectors('train', rankings)
-    X_validate, Y_validate = get_biz_vectors('validate', rankings)
-    X_test, Y_test = get_biz_vectors('test', rankings)
+def lasso(user_set):
+    """Lasso learner that uses the validation set to tune alpha."""
+    alphas = np.arange(0.1, 1, 0.1)
 
-    clf = linear_model.Lasso(alpha=alpha, normalize=False)
-    clf.fit(X_train, Y_train)
-    
-    Y_predicted_train = clf.predict(X_train)
-    Y_predicted_validate = clf.predict(X_validate)
-    Y_predicted_test = clf.predict(X_test)
+    ratings = compute_ratings(user_set)
+    X_train, Y_train = get_biz_vectors('train', ratings)
+    X_validate, Y_validate = get_biz_vectors('validate', ratings)
 
-    train_error = get_error(Y_train, Y_predicted_train)
-    validate_error = get_error(Y_validate, Y_predicted_validate)
-    test_error = get_error(Y_test, Y_predicted_test)
-    
-    return (validate_error, test_error, clf)
+    best_val = float('inf')
+    best_predictor = None
+
+    for alpha in alphas:
+        l = linear_model.Lasso(alpha=alpha, normalize=False)
+        l.fit(X_train, Y_train)
+
+        Y_predicted = l.predict(X_validate)
+        val_error = get_error(Y_validate, Y_predicted)
+
+        if val_error < best_val:
+            best_val = val_error
+            best_predictor = l.predict 
+
+    return l.predict
+
+def bayesian_ridge(user_set):
+    # TODO set hyperparameters using validation set
+    ratings = compute_ratings(user_set)
+    X_train, Y_train = get_biz_vectors('train', ratings)
+
+    l = linear_model.BayesianRidge()
+    l.fit(X_train, Y_train)
+    return l.predict
 
 
 if __name__ == '__main__':
-    best_clusterize(10, simple=False)
+    # uncomment one of these to analyze
+    predictor = kMeans(2, random_forests)
+    # predictor = kMeans(2, lasso)
+    # predictor = kMeans(2, mle)
+    # predictor = kMeans(2, bayesian_ridge)
+
+    print users_validation(predictor, maximum=250)
