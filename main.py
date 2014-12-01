@@ -1,6 +1,6 @@
 from collections import defaultdict
 from sklearn import (
-    cluster, linear_model, ensemble, neighbors
+    cluster, linear_model, ensemble, neighbors, preprocessing
 )
 from util import *
 import numpy as np
@@ -108,9 +108,14 @@ def kMeans(num_clusters, learner):
              for each restaurant the user has reviewed."""
     vectors, ID = get_user_vectors('train')
     kMeans = cluster.KMeans(n_clusters=num_clusters)
-    kMeans.fit(vectors)
+    
+    # scale features to mean of 0 and standard devaition 1
+    scaler = preprocessing.StandardScaler().fit(feature_vectors)
+    scaled_vectors = scaler.transform(vectors)
+    
+    kMeans.fit(scaled_vectors)
 
-    classes = kMeans.predict(vectors)
+    classes = kMeans.predict(scaled_vectors)
 
     # create a dictionary where a cluster # maps to a list of
     # user IDs belonging to that cluster
@@ -131,7 +136,8 @@ def kMeans(num_clusters, learner):
     # then find all the restauratns this user has gone to and
     # see how the predictor's guesses compare
     def fn(user_vector, user_id):
-        c = kMeans.predict(user_vector)[0]
+        scaled_vector = scaler.transform(user_vector)
+        c = kMeans.predict(scaled_vector)[0]
         ratings = compute_ratings(set([user_id]))
 
         inp, actual = get_biz_vectors('all', ratings)

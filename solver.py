@@ -4,12 +4,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import svm
 from sklearn.cluster import KMeans
-
+from sklearn import preprocessing
+from sklearn.mixture import GMM
 
 """
 Determines user clusters
 """
-def determineClusters(filename, num_clusters = 6, analyze_clusters = False):
+def determineClusters(filename, num_clusters = 6, cluster_type = 'kmeans', 
+        analyze_clusters = False):
 
     # initialize vectors
     user_IDs = []
@@ -39,12 +41,29 @@ def determineClusters(filename, num_clusters = 6, analyze_clusters = False):
             # add feature vector to list
             feature_vectors.append(feature_vector)
 
-    # train data using k-means clustering ( can change later )
-    kcluster = KMeans(n_clusters=num_clusters, init='k-means++', n_init=10,\
-            max_iter=300, tol=0.0001, precompute_distances=True, verbose=0,\
-            random_state=None, copy_x=True, n_jobs=1)
-    kcluster.fit(feature_vectors)
-    clusters = kcluster.predict(feature_vectors)
+    # first scale data for clustering
+    scaler = preprocessing.StandardScaler().fit(feature_vectors)
+    scaled_features = scaler.transform(feature_vectors)
+
+    # train cluster generator as defined by cluster_type
+    if cluster_type is 'kmeans':
+
+        # define generator using k-means clustering
+        cluster_gen = KMeans(n_clusters=num_clusters, init='k-means++', 
+                n_init=10, max_iter=300, tol=0.0001, 
+                precompute_distances=True, verbose=0, random_state=None, 
+                copy_x=True, n_jobs=1)
+
+    elif cluster_type is 'GMM':
+
+        # define generator using mixture of gaussians (GMM)
+        cluster_gen = GMM(n_components=num_clusters, covariance_type='diag', 
+                random_state=None, thresh=0.01, min_covar=0.001, n_iter=100, 
+                n_init=1, params='wmc', init_params='wmc')
+
+    # train cluster generator
+    cluster_gen.fit(scaled_features)
+    clusters = cluster_gen.predict(scaled_features)
 
     # output cluster information if requested
     if analyze_clusters:
@@ -103,5 +122,5 @@ if __name__ == "__main__":
     
     # run clustering algorithm on for first file
     user_clusters = determineClusters( "../data/user_features_0.csv", 6, 
-            analyze_clusters = True)
+            cluster_type='GMM', analyze_clusters = True)
 
