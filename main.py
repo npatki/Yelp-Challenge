@@ -6,6 +6,7 @@ from util import *
 import numpy as np
 import time
 import sys
+import matplotlib.pyplot as plt
 
 """This is the main script that does the end-to-end testing.
 
@@ -101,9 +102,8 @@ def gaussianMixture(num_clusters, learner):
         scaled_vector = scaler.transform(user_vector)
         c = GMM.predict([scaled_vector])[0]
         ratings, NA = compute_ratings(set([user_id]))
-
+        
         inp, actual, NA = get_biz_vectors('all', ratings)
-        tifced
         guess = predictors[c](inp)
         return guess, actual
 
@@ -294,6 +294,15 @@ def mle(user_set, weights = None):
 
     return predict
 
+def random_forests(user_set, weights = None):
+    """ Random forest learner."""
+    # TODO set hyperparameters using validation set
+    l = ensemble.RandomForestRegressor()
+    ratings, biz_weights = compute_ratings(user_set, weights)
+    X_train, Y_train, W_train = get_biz_vectors('train', ratings, biz_weights)
+    l.fit(X_train, Y_train, W_train)
+    return l.predict
+
 
 def ridge(user_set, weights = None):
     """Ridge regression learner that uses the validation set to tune alpha."""
@@ -318,7 +327,7 @@ def ridge(user_set, weights = None):
             best_val = val_error
             best_predictor = l.predict 
 
-    return l.predict
+    return best_predictor
 
 def lasso(user_set):
     """Lasso learner that uses the validation set to tune alpha."""
@@ -342,7 +351,7 @@ def lasso(user_set):
             best_val = val_error
             best_predictor = l.predict 
 
-    return l.predict
+    return best_predictor
 
 def bayesian_ridge(user_set):
     # TODO set hyperparameters using validation set
@@ -369,9 +378,12 @@ if __name__ == '__main__':
     # predictor = kMeans(2, lasso)
     # predictor = kMeans(1, mle)
     # predictor = kMeans(2, bayesian_ridge)
-    #predictor = gaussianMixture(2, mle)
 
     # NOTE: Baysian gaussian can only be used with mle and ridge
     # predictor = bayesianGaussianMixture(2, ridge)
 
     run(kMeans, mle, 2)
+    #predictor = bayesianGaussianMixture(2, ridge)
+
+    predictor = bayesianGaussianMixture(cluster_num, )
+    print users_validation(predictor, maximum=20)
