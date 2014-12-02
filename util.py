@@ -42,10 +42,9 @@ def compute_ratings(user_set, weights = None):
     # given to it by members of user_set
     ratings = defaultdict(list)
 
-    for user in reviews:
-        if user in user_set:
-            for biz, rating in reviews[user]:
-                ratings[biz].append(rating)
+    for user in user_set:
+        for biz, rating in reviews[user]:
+            ratings[biz].append(rating)
     
     # the output should map biz_id --> average of the list
     new_ratings = {}

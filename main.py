@@ -4,6 +4,8 @@ from sklearn import (
 )
 from util import *
 import numpy as np
+import time
+import sys
 
 """This is the main script that does the end-to-end testing.
 
@@ -43,6 +45,8 @@ def users_validation(predictor, maximum=float('inf')):
         ct += 1
         if ct == maximum:
             break
+        if ct%100 == 0:
+            print 'done %d users' % ct
 
         guess, actual = predictor(test_vectors[i], v)
         total_error += get_error(actual, guess)
@@ -349,16 +353,25 @@ def bayesian_ridge(user_set):
     l.fit(X_train, Y_train)
     return l.predict
 
+def run(cluster_method, regression_method, hyperparam):
+    predictor = cluster_method(hyperparam, regression_method)
+
+    print 'doing prediction'
+    t0 = time.clock()
+    print users_validation(predictor)
+    t1 = time.clock()
+    print 'time elapsed %f' % (t1 - t0)
+
 
 if __name__ == '__main__':
     # uncomment one of these to analyze
     # predictor = kNeighbors(200, bayesian_ridge)
     # predictor = kMeans(2, lasso)
-    # predictor = kMeans(2, mle)
+    # predictor = kMeans(1, mle)
     # predictor = kMeans(2, bayesian_ridge)
     #predictor = gaussianMixture(2, mle)
 
     # NOTE: Baysian gaussian can only be used with mle and ridge
-    predictor = bayesianGaussianMixture(2, ridge)
+    # predictor = bayesianGaussianMixture(2, ridge)
 
-    print users_validation(predictor, maximum=20)
+    run(kMeans, mle, 2)
