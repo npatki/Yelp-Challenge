@@ -12,7 +12,7 @@ MAPPING = {
     'all': [0, 1, 2, 3]
 }
 
-def get_error(Y_actual, Y_predicted):
+def get_error(Y_actual, Y_predicted, weights = None):
     """Calculates the error in prediction.
     
     :param Y_actual: an array of expected outputs
@@ -25,9 +25,12 @@ def get_error(Y_actual, Y_predicted):
     # undershooting means the prediction is the lowest rating: 1.0
     Y_predicted[Y_predicted < 1.0] = 1.0
 
-    return sum(abs(Y_predicted-Y_actual))/len(Y_actual)
+    if weights == None:
+        return sum(abs(Y_predicted-Y_actual))/len(Y_actual)
+    else:
+        return sum(abs(Y_predicted-Y_actual)*weights)
 
-def compute_ratings(user_set):
+def compute_ratings(user_set, weights = None):
     """Method that recalculates the ratings of a business to 
     reflect only the users in the user_set
     
@@ -46,10 +49,23 @@ def compute_ratings(user_set):
     
     # the output should map biz_id --> average of the list
     new_ratings = {}
-    for biz, values in ratings.items():
-        new_ratings[biz] = sum(values)/float(len(values))
-
-    return new_ratings
+    new_weights = {}
+    if weights == None:
+        new_weights = None
+        for biz, values in ratings.items():
+            new_ratings[biz] = sum(values)/float(len(values))
+    else:
+        # create weighted ratings
+        for biz, values in ratings.items():
+            new_ratings[biz] = 0
+            new_weights[biz] = 0
+            for i, value in enumerate(values):
+                new_ratings[biz] += weights[i] * value
+                new_weights[biz] += weights[i]
+            
+            new_ratings[biz] /= new_weights[biz]
+    
+    return new_ratings, new_weights
 
 def get_user_vectors(process):
     """Get vectors representing the users.
@@ -77,7 +93,7 @@ def get_user_vectors(process):
     
     return X_out, ID_out
 
-def get_biz_vectors(process, ratings):
+def get_biz_vectors(process, ratings, weights = None):
     """Get the vectors representing businesses.
     
     :param process: either 'test', 'validate', 'train' or 'all'
@@ -87,14 +103,24 @@ def get_biz_vectors(process, ratings):
     partition_list = MAPPING[process]
     X_out = []
     Y_out = []
+    biz_out = []
 
     for i in partition_list:
         filename = '../data/biz_features_%d.csv' % i
-        X, Y = get_biz_input_output(ratings, filename)
+        X, Y, biz_list = get_biz_input_output(ratings, filename)
         X_out.extend(X)
         Y_out.extend(Y)
+        biz_out.extend(biz_list)
 
-    return X_out, Y_out
+    if weights is None:
+        W_out = None
+    else:
+        W_out = []
+        for biz in biz_out:
+            W_out.append( weights[biz] )
+        W_out = np.array(W_out)
+
+    return X_out, Y_out, W_out
 
 def get_biz_input_output(ratings, filename):
     """Grab and format the business feature vectors and outputs so that
@@ -109,17 +135,20 @@ def get_biz_input_output(ratings, filename):
 
     X = []
     Y = []
+    biz_list = []
 
     with open(filename, 'r') as f:
         for line in f:
             info = line.strip().split()
 
             # info[0] contains the ID of the business
-            if info[0] in ratings:
+            biz = info[0]
+            if biz in ratings:
                 # info[-1] is the overall rating of the biz
                 # we want to predict the recomputed rating
                 values = [float(j) for j in info[1:-1]]
                 X.append(values)
-                Y.append(ratings[info[0]])
+                Y.append(ratings[biz])
+                biz_list.append(biz)
 
-    return X, Y
+    return X, Y, biz_list
