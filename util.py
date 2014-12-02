@@ -41,31 +41,46 @@ def compute_ratings(user_set, weights = None):
     # intermediate dictionary that maps biz_id --> list of ratings
     # given to it by members of user_set
     ratings = defaultdict(list)
+    weight_lists = defaultdict(list)
 
     for user in reviews:
         if user in user_set:
             for biz, rating in reviews[user]:
+                if weights != None:
+                    weight_lists[biz].append(weights[user])
                 ratings[biz].append(rating)
     
     # the output should map biz_id --> average of the list
     new_ratings = {}
-    new_weights = {}
     if weights == None:
         new_weights = None
         for biz, values in ratings.items():
             new_ratings[biz] = sum(values)/float(len(values))
+        
+        return new_ratings, None
     else:
         # create weighted ratings
+        new_weights = {}
+        total_weight = 0
         for biz, values in ratings.items():
             new_ratings[biz] = 0
             new_weights[biz] = 0
+            
+            # weights corresponding to user i with rating value
             for i, value in enumerate(values):
-                new_ratings[biz] += weights[i] * value
-                new_weights[biz] += weights[i]
+                weight = weight_lists[biz][i]
+                new_ratings[biz] += weight * value
+                new_weights[biz] += weight
+                total_weight += weight
             
             new_ratings[biz] /= new_weights[biz]
-    
-    return new_ratings, new_weights
+
+        # renormalize weights to sum to one (i.e. sum over all
+        # businesses in dictionary)
+        for weight in new_weights.values():
+            weight /= total_weight
+            
+        return new_ratings, new_weights
 
 def get_user_vectors(process):
     """Get vectors representing the users.

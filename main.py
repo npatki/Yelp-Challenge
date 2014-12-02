@@ -133,22 +133,34 @@ def bayesianGaussianMixture(num_clusters, learner):
 
     # create a dictionary where a cluster # maps to a list of
     # user IDs belonging to that cluster
-    weight_vector = []
+    user_weights = []
+    groups = []
     for j in xrange(num_clusters):
-        weight_vector.append( np.zeros(len(scaled_vectors)) )
+        weight_vector = []
+        groups.append([])
         for i in xrange( len(scaled_vectors) ):
-            weight_vector[j][i] = classes[i][j]
+            class_component = round(classes[i][j],6)
+            if class_component != 0:
+                groups[j].append(ID[i])
+                weight_vector.append( class_component )
         
         # normalize weights
-        weight_vector[j] /= sum(weight_vector[j])
+        weight_vector = np.array(weight_vector)
+        weight_vector /= sum(weight_vector)
+        
+        # input final user weights into dictionary
+        user_weights.append(dict())
+        for k, weight in enumerate(weight_vector):
+            user = groups[j][k]
+            user_weights[j][user] = weight
 
     # these are the corresponding functions to call for each group
     predictors = [0]*num_clusters
 
-    # train predictors - each predictor uses the entire data set with
+    # train predictors - each predictor uses almost the entire data set with
     # weights corresponding associated with each user
-    for g, weights in enumerate(weight_vector):
-        user_set = set(ID)
+    for g, weights in enumerate(user_weights):
+        user_set = set(groups[g])
         predictors[g] = learner(user_set, weights)
     
     # this is a function that does the end-to-end prediction:
@@ -369,6 +381,7 @@ if __name__ == '__main__':
     # NOTE: Baysian gaussian can only be used with mle and ridge
     #predictor = bayesianGaussianMixture(2, ridge)
 
-    
-    predictor = bayesianGaussianMixture(cluster_num, )
-    print users_validation(predictor, maximum=20)
+    cluster_nums = range(10)
+    for cluster_num in cluster_nums:
+        predictor = bayesianGaussianMixture(cluster_num+1, mle)
+        print users_validation(predictor, maximum=20)
