@@ -46,8 +46,8 @@ def users_validation(predictor, maximum=float('inf')):
         ct += 1
         if ct == maximum:
             break
-        #if ct%100 == 0:
-        #    print 'done %d users' % ct
+        if ct%100 == 0:
+            print 'done %d users' % ct
 
         guess, actual = predictor(test_vectors[i], v)
         total_error += get_error(actual, guess)
@@ -407,7 +407,8 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-
+    run( bayesianGaussianMixture, random_forests, 2 )
+    exit()
     cluster_nums = range(1,25)
     y = []
     for i in cluster_nums:
