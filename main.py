@@ -46,8 +46,8 @@ def users_validation(predictor, maximum=float('inf')):
         ct += 1
         if ct == maximum:
             break
-        #if ct%100 == 0:
-        #    print 'done %d users' % ct
+        if ct%100 == 0:
+            print 'done %d users' % ct
 
         guess, actual = predictor(test_vectors[i], v)
         total_error += get_error(actual, guess)
@@ -312,7 +312,6 @@ def random_forests(user_set, weights = None):
     l = ensemble.RandomForestRegressor()
     ratings, biz_weights = compute_ratings(user_set, weights)
     X_train, Y_train, W_train = get_biz_vectors('train', ratings, biz_weights)
-    print sum(W_train)
     l.fit(X_train, Y_train, W_train)
     return l.predict
 
