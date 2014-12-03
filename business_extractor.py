@@ -55,6 +55,7 @@ feature_names = [
     'waiter_true', 'waiter_false', 'waiter_missing',
     'full_bar', 'beer_and_wine', 'none', 'alcohol_missing',
     'casual', 'dressy', 'formal', 'attire_missing',
+    '$', '$$', '$$$', '$$$$', 'price_range_missing',
     'Mexican','American_Traditional', 'Fast_Food',
     'Pizza', 'Sandwiches', 'Nightlife', 'Bars', 'Food',
     'American_New', 'Italian', 'Chinese', 'Burgers',
@@ -159,7 +160,7 @@ class BooleanAttributesExtractor(object):
     attributes = [
         'Accepts Credit Cards',
         'Coat Check',
-        'Good For Kids',
+        'Good for Kids',
         'Good For Groups',
         'Good For Dancing',
         'Has TV',
@@ -205,6 +206,7 @@ class StringAttributesExtractor(object):
         'dressy',
         'formal'
     ]
+    prices = [1,2,3,4]
  
     def __call__(self, data):
         vector = []
@@ -226,6 +228,19 @@ class StringAttributesExtractor(object):
         if 'Attire' in data['attributes']:
             for attire in self.attires:
                 if data['attributes']['Attire'] == attire:
+                    vector.append(1)
+                else:
+                    vector.append(0)
+            vector.append(0)
+        else:
+            for attire in self.attires:
+                vector.append(0)
+            vector.append(1)
+
+        # add price range features
+        if 'Price Range' in data['attributes']:
+            for price in self.prices:
+                if data['attributes']['Price Range'] == price:
                     vector.append(1)
                 else:
                     vector.append(0)
