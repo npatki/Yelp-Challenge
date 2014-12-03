@@ -134,6 +134,7 @@ def get_biz_vectors(process, ratings, weights = None):
         for biz in biz_out:
             W_out.append( weights[biz] )
         W_out = np.array(W_out)
+        W_out = W_out/sum(W_out)
 
     return X_out, Y_out, W_out
 
