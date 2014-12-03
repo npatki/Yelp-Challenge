@@ -76,6 +76,14 @@ The user feature vector contains 33 features, 28 of which are associated with th
 
 \subsection{Business Data}
 
+Once users are partitioned into clusters, a model must be developed for each cluster that predicts the business rating. To accomplish this, features related to the businesses are required. For this set, most features are pulled directly from the list of binary attributes. The business attributes are primarily binary features such as whether a restaurant allows smoking. However, again missing data is common in the business features.
+
+To solve the missing data problem for binary features, we split each binary feature into three features. Only one feature is 1 and the rest is 0 for all features. If there is a present and positive binary feature, the first feature is marked with a 1. If there is a present and negative binary feature, the second feature is marked with a 1. In the case of missing data, the last feature is marked with a 1. 
+
+A similar approach is taken with categorical features. For instance, the attire attribute may be listed as casual, dressy, formal, or the data might be missing. This feature is therefore split into four features with an approach similar to the binary features wherein only one feature is marked with a 1.
+
+Additional features are engineered from the data available. The Yelp dataset is based off data from 5 metro areas: Phoenix, Las Vegas, Madison, Waterloo, and Edinburgh. The business attributes lists the city in which the restaurant is located, but not the metro area. This is problematic since intuitively the metro area should have an impact on the rating since the five cities are very different in nature. However, the latitude and longitude of the locations is provided. Using these coordinates along with the coordinates of the centers of the major cities, as provided by Wikipedia, the metro area can easily be determined by finding the closest center. Therefore a categorical feature can be developed for the metro area much like the attire example presented previously. Additionally, distance to the center of the city might be important so a feature is added that gives the distance to the center of the city based off the coordinates.
+
 \section{Methodology}
 \subsection{Hidden Factor}
 \subsubsection{K-Means Clustering}

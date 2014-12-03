@@ -402,7 +402,7 @@ if __name__ == '__main__':
     cluster_nums = range(1,25)
     y = []
     for i in cluster_nums:
-        y.append( run( bayesianGaussianMixture, mle, i ) )
+        y.append( run( bayesianGaussianMixture, random_forests, i ) )
     
     plt.plot(cluster_nums, y, 'kx-')
     plt.xlabel('Number of Clusters')
