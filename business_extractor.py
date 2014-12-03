@@ -64,9 +64,9 @@ feature_names = [
 ]
 names_string = ' '.join(feature_names)
 
-class AmbianceExtractor(object):
+class AmbienceExtractor(object):
 
-    all_ambiances = [
+    all_ambiences = [
         'casual',
         'classy',
         'divey',
@@ -88,23 +88,23 @@ class AmbianceExtractor(object):
     
     def __call__(self, data):
         """Return binary feature vector with 1's that
-        correspond to the appropriate ambiances."""
+        correspond to the appropriate ambiences."""
 
         vector = []
 
-        if 'Ambiance' in data['attributes']:
-            ambiances = data['attributes']['Ambiance']
+        if 'Ambience' in data['attributes']:
+            ambiences = data['attributes']['Ambience']
 
-            for ambiance in self.all_ambiances:
-                if ambiance in ambiances:
-                    if ambiances[ambiance]:
+            for ambience in self.all_ambiences:
+                if ambience in ambiences:
+                    if ambiences[ambience]:
                         vector.extend(copy(self.vectors['true']))
                     else:
                         vector.extend(copy(self.vectors['false']))
                 else:
                     vector.extend(copy(self.vectors['missing']))
         else:
-            for i in xrange(len(self.all_ambiances)):
+            for i in xrange(len(self.all_ambiences)):
                 vector.extend(copy(self.vectors['missing']))
 
         return vector
@@ -131,7 +131,7 @@ class GoodForExtractor(object):
     
     def __call__(self, data):
         """Return binary feature vector with 1's that
-        correspond to the appropriate ambiances."""
+        correspond to the appropriate ambiences."""
 
         vector = []
 
@@ -323,7 +323,7 @@ def RatingExtractor(data):
 
 if __name__ == '__main__':
     extractors = [
-        AmbianceExtractor(),
+        AmbienceExtractor(),
         GoodForExtractor(),
         BooleanAttributesExtractor(),
         StringAttributesExtractor(),
