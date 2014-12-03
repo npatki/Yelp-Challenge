@@ -55,6 +55,7 @@ feature_names = [
     'waiter_true', 'waiter_false', 'waiter_missing',
     'full_bar', 'beer_and_wine', 'none', 'alcohol_missing',
     'casual', 'dressy', 'formal', 'attire_missing',
+    '$', '$$', '$$$', '$$$$', 'price_range_missing',
     'Mexican','American_Traditional', 'Fast_Food',
     'Pizza', 'Sandwiches', 'Nightlife', 'Bars', 'Food',
     'American_New', 'Italian', 'Chinese', 'Burgers',
@@ -64,7 +65,7 @@ feature_names = [
 ]
 names_string = ' '.join(feature_names)
 
-class AmbianceExtractor(object):
+class AmbienceExtractor(object):
 
     all_ambiances = [
         'casual',
@@ -92,8 +93,8 @@ class AmbianceExtractor(object):
 
         vector = []
 
-        if 'Ambiance' in data['attributes']:
-            ambiances = data['attributes']['Ambiance']
+        if 'Ambience' in data['attributes']:
+            ambiances = data['attributes']['Ambience']
 
             for ambiance in self.all_ambiances:
                 if ambiance in ambiances:
@@ -205,6 +206,8 @@ class StringAttributesExtractor(object):
         'dressy',
         'formal'
     ]
+
+    prices = [1,2,3,4]
  
     def __call__(self, data):
         vector = []
@@ -234,6 +237,20 @@ class StringAttributesExtractor(object):
             for attire in self.attires:
                 vector.append(0)
             vector.append(1)
+
+        # add price range features
+        if 'Price Range' in data['attributes']:
+            for price in self.prices:
+                if data['attributes']['Price Range'] == price:
+                    vector.append(1)
+                else:
+                    vector.append(0)
+            vector.append(0)
+        else:
+            for attire in self.attires:
+                vector.append(0)
+            vector.append(1)
+
 
         return vector
 
@@ -323,7 +340,7 @@ def RatingExtractor(data):
 
 if __name__ == '__main__':
     extractors = [
-        AmbianceExtractor(),
+        AmbienceExtractor(),
         GoodForExtractor(),
         BooleanAttributesExtractor(),
         StringAttributesExtractor(),

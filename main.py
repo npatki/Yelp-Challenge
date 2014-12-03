@@ -46,8 +46,8 @@ def users_validation(predictor, maximum=float('inf')):
         ct += 1
         if ct == maximum:
             break
-        if ct%100 == 0:
-            print 'done %d users' % ct
+        #if ct%100 == 0:
+        #    print 'done %d users' % ct
 
         guess, actual = predictor(test_vectors[i], v)
         total_error += get_error(actual, guess)
@@ -386,11 +386,14 @@ def bayesian_ridge(user_set):
 def run(cluster_method, regression_method, hyperparam):
     predictor = cluster_method(hyperparam, regression_method)
 
-    print 'doing prediction'
+    #print 'doing prediction'
     t0 = time.clock()
-    print users_validation(predictor)
+    diff = users_validation(predictor)
+    print diff
     t1 = time.clock()
-    print 'time elapsed %f' % (t1 - t0)
+    #print 'time elapsed %f' % (t1 - t0)
+
+    return diff
 
 
 if __name__ == '__main__':
@@ -403,8 +406,14 @@ if __name__ == '__main__':
     # NOTE: Baysian gaussian can only be used with mle and ridge
     # predictor = bayesianGaussianMixture(2, ridge)
 
-    run(kMeans, mle, 2)
     #predictor = bayesianGaussianMixture(2, ridge)
 
-    predictor = bayesianGaussianMixture(cluster_num, )
-    print users_validation(predictor, maximum=20)
+    cluster_nums = range(1,25)
+    y = []
+    for i in cluster_nums:
+        y.append( run( bayesianGaussianMixture, random_forests, i ) )
+    
+    plt.plot(cluster_nums, y, 'kx-')
+    plt.xlabel('Number of Clusters')
+    plt.ylabel('Average Validation Error')
+    plt.show()
