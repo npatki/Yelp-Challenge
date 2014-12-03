@@ -399,15 +399,13 @@ if __name__ == '__main__':
     # NOTE: Baysian gaussian can only be used with mle and ridge
     # predictor = bayesianGaussianMixture(2, ridge)
 
-    print run( bayesianGaussianMixture, mle, 2 )
-'''
+    #print run( bayesianGaussianMixture, mle, 2 )
     cluster_nums = range(1,25)
     y = []
     for i in cluster_nums:
-        y.append( run( bayesianGaussianMixture, random_forests, i ) )
+        y.append( run( kMeans, random_forests, i ) )
 
     plt.plot(cluster_nums, y, 'kx-')
     plt.xlabel('Number of Clusters')
     plt.ylabel('Average Validation Error')
     plt.show()
-'''

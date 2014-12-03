@@ -142,8 +142,8 @@ if __name__ == '__main__':
 
     # list of business types
     biz_types = [
-        'Wine_Bars','Jazz', 'Gay_Bars', 'American_Traditional',
-        'Breweries', 'Karaoke', 'Dive_Bars', 'Restaurants', 'Bars',
+        ['Wine_Bars','Jazz'], ['Gay_Bars'], ['Breweries', 'Pubs', 'Karaoke'], 
+        ['Breweries','Pubs', 'Dive_Bars''Dive_Bars',
         'Lounges', 'Dance_Clubs', 'Sports_Bars', 'Pubs', 'Music_Venues'
     ]
         

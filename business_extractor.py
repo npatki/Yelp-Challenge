@@ -128,7 +128,7 @@ class MusicExtractor(object):
             'live', 
             'video', 
             'karaoke', 
-            'background_music', 
+            'background_music' 
     ]
 
 
@@ -146,8 +146,8 @@ class MusicExtractor(object):
 
         vector = []
 
-        if 'Good For' in data['attributes']:
-            music_data = data['attributes']['Good For']
+        if 'Music' in data['attributes']:
+            music_data = data['attributes']['Music']
 
             for music in self.music_types:
                 if music in music_data:
@@ -169,14 +169,8 @@ class BooleanAttributesExtractor(object):
     # attribute that have True/False values
     attributes = [
         'Accepts Credit Cards',
-        'Coat Check',
-        'Good for Kids',
         'Good For Groups',
-        'Good For Dancing',
-        'Has TV',
-        'Outdoor Seating',
-        'Waiter Service',
-        'Happy Hour'
+        'Good For Dancing'
     ]
 
 
@@ -313,9 +307,10 @@ class CategoryExtractor(object):
     # that category.
     # list of business types
     all_categories = [
-        'Wine Bars','Jazz & Blues', 'Gay Bars', 'American (Traditional)',
-        'Breweries', 'Karaoke', 'Dive Bars', 'Restaurants', 'Bars',
-        'Lounges', 'Dance Clubs', 'Sports Bars', 'Pubs', 'Music Venues']
+        ['Wine Bars', 'Jazz & Blues'], ['Gay Bars'], 
+        ['Breweries', 'Pubs', 'Sports Bars'], ['Lounges', 'Dance Clubs'],
+        ['Dive Bars'], ['Music Venues', 'Karaoke']
+    ]
     
     def __call__(self, data):
         """Return binary feature vector with 1's that 
@@ -326,11 +321,9 @@ class CategoryExtractor(object):
         if 'categories' in data:
             categories = data['categories']
             for category in categories:
-                try:
-                    index = self.all_categories.index(category)
-                except ValueError:
-                    continue
-                vector[index] = 1
+                for i, group in enumerate(all_categories):
+                    if category in group:
+                        vecto[i] = 1
 
         return vector
 
