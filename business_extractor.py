@@ -158,10 +158,10 @@ class BooleanAttributesExtractor(object):
     # attribute that have True/False values
     attributes = [
         'Accepts Credit Cards',
-        'Delivery',
-        'Dogs Allowed',
-        'Good for Kids',
+        'Coat Check',
+        'Good For Kids',
         'Good For Groups',
+        'Good For Dancing',
         'Has TV',
         'Outdoor Seating',
         'Waiter Service'
