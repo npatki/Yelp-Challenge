@@ -10,12 +10,12 @@ import json
 import random
 
 BUSINESS = '../data/yelp_academic_dataset_business.json'
-MAX = 3576
+MAX = 718
 OUT = [
-    open('../data/biz_0.json', 'w'),
-    open('../data/biz_1.json', 'w'),
-    open('../data/biz_2.json', 'w'),
-    open('../data/biz_3.json', 'w')
+    open('../data/nl_biz_0.json', 'w'),
+    open('../data/nl_biz_1.json', 'w'),
+    open('../data/nl_biz_2.json', 'w'),
+    open('../data/nl_biz_3.json', 'w')
 ]
 
 if __name__ == '__main__':
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         for line in f:
             data = json.loads(line)
 
-            if 'Restaurants' in data['categories']:
+            if 'Nightlife' in data['categories']:
                 partition = random.randint(0, len(OUT)-1)
 
                 # choose a partition that has spots available

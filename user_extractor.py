@@ -49,12 +49,12 @@ A function that loads business information from .csv files into a dictionary.
 Information is stored as (business_id, business_types)  where business_types is
 a vector of all applicable business types to the particular business.
 """
-def LoadBusinessInformation(business_file, restaurant_types):
+def LoadBusinessInformation(business_file, biz_types):
 
     print "Loading business dictionary..."
     
     # initialize array of indexes into CSV file
-    type_indexes = range(len(restaurant_types))
+    type_indexes = range(len(biz_types))
 
     # create dicitonary of businesses by business ID
     businessDict = dict()
@@ -65,14 +65,14 @@ def LoadBusinessInformation(business_file, restaurant_types):
         # read all lines in the file
         lines = csvfile.readlines()
 
-        # read the header, find indexes for restaurant types
+        # read the header, find indexes for biz types
         header = lines[0].split()
         for i,word in enumerate(header):
-            for j,typ in enumerate(restaurant_types):
+            for j,typ in enumerate(biz_types):
                 if word == typ:
                     type_indexes[j] = i
 
-        # cycle through bulk data and make sets of restaurant type for businesses
+        # cycle through bulk data and make sets of biz type for businesses
         for line in lines[1:]:
         
             # split line into individual enteries
@@ -87,7 +87,7 @@ def LoadBusinessInformation(business_file, restaurant_types):
             # find which types are associated with the business
             for i,index in enumerate(type_indexes):
                 if int(words[index]) == 1:
-                    types.append(restaurant_types[i])
+                    types.append(biz_types[i])
 
             # change types into a set
             typeSet = set(types)
@@ -134,20 +134,20 @@ def LoadReviewInformation(review_file):
 if __name__ == '__main__':
 
     # file names
-    business_file_base = '../data/biz_features_'
+    business_file_base = '../data/nl_biz_features_'
     user_file = '../data/yelp_academic_dataset_user.json'
     review_file = '../data/yelp_academic_dataset_review.json'
 
-    # list of restuarant types
-    restaurant_types = [
-        'Mexican','American_Traditional', 'Fast_Food',
-        'Pizza', 'Sandwiches', 'Nightlife', 'Bars', 'Food',
-        'American_New', 'Italian', 'Chinese', 'Burgers',
-        'Breakfast_Brunch', 'Japanese']
+    # list of business types
+    biz_types = [
+        'Wine Bars','Jazz & Blues', 'Gay Bars', 'American (Traditional)',
+        'Gay Bars', 'Breweries', 'Karaoke', 'Dive Bars', 'Restaurants',
+        'Bars', 'Lounges', 'Dance Clubs', 'Sports Bars', 'Pubs', 
+        'Music Venues']
     
-    # put restaurant types into dictionary
-    ntypes = len(restaurant_types)
-    typeDict = dict( zip(restaurant_types, range(ntypes)) )
+    # put biz types into dictionary
+    ntypes = len(biz_types)
+    typeDict = dict( zip(biz_types, range(ntypes)) )
 
     # load user dicitonaries
     userDict = LoadUserInformation(user_file)
@@ -158,16 +158,16 @@ if __name__ == '__main__':
     for n in range(num_business_partitions):
         business_file = business_file_base + str(n) + ".csv"
         businessDict.update( \
-                LoadBusinessInformation(business_file, restaurant_types) )
+                LoadBusinessInformation(business_file, biz_types) )
 
     # create header and define list of lines to output to files
     outputLines = []
     header = ['user_id']
     for i in xrange(ntypes):
-        name = restaurant_types[i] + '_num'
+        name = biz_types[i] + '_num'
         header.append(name)
     for i in xrange(ntypes):
-        name = restaurant_types[i] + '_rating'
+        name = biz_types[i] + '_rating'
         header.append(name)
     header.append('sample_reviews')
     header.append('sample_variance')

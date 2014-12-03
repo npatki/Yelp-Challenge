@@ -7,17 +7,17 @@ import json
 import math
 
 BUSINESSES = [
-    '../data/biz_0.json',
-    '../data/biz_1.json',
-    '../data/biz_2.json',
-    '../data/biz_3.json'
+    '../data/nl_biz_0.json',
+    '../data/nl_biz_1.json',
+    '../data/nl_biz_2.json',
+    '../data/nl_biz_3.json'
 ]
 
 OUT = [
-    '../data/biz_features_0.csv',
-    '../data/biz_features_1.csv',
-    '../data/biz_features_2.csv',
-    '../data/biz_features_3.csv'
+    '../data/nl_biz_features_0.csv',
+    '../data/nl_biz_features_1.csv',
+    '../data/nl_biz_features_2.csv',
+    '../data/nl_biz_features_3.csv'
 ]
 
 # TODO: script that uses the extractors and puts the input vectors into a file
@@ -64,9 +64,9 @@ feature_names = [
 ]
 names_string = ' '.join(feature_names)
 
-class AmbianceExtractor(object):
+class AmbienceExtractor(object):
 
-    all_ambiances = [
+    all_ambiences = [
         'casual',
         'classy',
         'divey',
@@ -88,23 +88,23 @@ class AmbianceExtractor(object):
     
     def __call__(self, data):
         """Return binary feature vector with 1's that
-        correspond to the appropriate ambiances."""
+        correspond to the appropriate ambiences."""
 
         vector = []
 
-        if 'Ambiance' in data['attributes']:
-            ambiances = data['attributes']['Ambiance']
+        if 'Ambience' in data['attributes']:
+            ambiences = data['attributes']['Ambience']
 
-            for ambiance in self.all_ambiances:
-                if ambiance in ambiances:
-                    if ambiances[ambiance]:
+            for ambience in self.all_ambiences:
+                if ambience in ambiences:
+                    if ambiences[ambience]:
                         vector.extend(copy(self.vectors['true']))
                     else:
                         vector.extend(copy(self.vectors['false']))
                 else:
                     vector.extend(copy(self.vectors['missing']))
         else:
-            for i in xrange(len(self.all_ambiances)):
+            for i in xrange(len(self.all_ambiences)):
                 vector.extend(copy(self.vectors['missing']))
 
         return vector
@@ -131,7 +131,7 @@ class GoodForExtractor(object):
     
     def __call__(self, data):
         """Return binary feature vector with 1's that
-        correspond to the appropriate ambiances."""
+        correspond to the appropriate ambiences."""
 
         vector = []
 
@@ -242,25 +242,15 @@ class CategoryExtractor(object):
 
     # These are all the categories that have >= 500 businesses
     # in the business data set in the 'Restaurants' category
-    # We don't include 'Restaurants' because all data points include
+    # We don't include 'Nightlife' because all data points include
     # that category.
+    # list of business types
     all_categories = [
-        'Mexican',
-        'American (Traditional)',
-        'Fast Food',
-        'Pizza',
-        'Sandwiches',
-        'Nightlife',
-        'Bars',
-        'Food',
-        'American (New)',
-        'Italian',
-        'Chinese',
-        'Burgers',
-        'Breakfast & Brunch',
-        'Japanese'
-    ]
-
+        'Wine Bars','Jazz & Blues', 'Gay Bars', 'American (Traditional)',
+        'Gay Bars', 'Breweries', 'Karaoke', 'Dive Bars', 'Restaurants',
+        'Bars', 'Lounges', 'Dance Clubs', 'Sports Bars', 'Pubs', 
+        'Music Venues']
+    
     def __call__(self, data):
         """Return binary feature vector with 1's that 
         corresponds to the appropriate categories."""
@@ -323,7 +313,7 @@ def RatingExtractor(data):
 
 if __name__ == '__main__':
     extractors = [
-        AmbianceExtractor(),
+        AmbienceExtractor(),
         GoodForExtractor(),
         BooleanAttributesExtractor(),
         StringAttributesExtractor(),
