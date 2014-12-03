@@ -8,6 +8,8 @@ import time
 import sys
 import matplotlib.pyplot as plt
 
+#TODO: search by bars, search by nightlife
+
 """This is the main script that does the end-to-end testing.
 
 1. Take the user feature vector partitions and designate 1
