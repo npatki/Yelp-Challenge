@@ -247,7 +247,7 @@ class StringAttributesExtractor(object):
                     vector.append(0)
             vector.append(0)
         else:
-            for attire in self.attires:
+            for price in self.prices:
                 vector.append(0)
             vector.append(1)
 

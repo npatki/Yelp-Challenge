@@ -312,6 +312,7 @@ def random_forests(user_set, weights = None):
     l = ensemble.RandomForestRegressor()
     ratings, biz_weights = compute_ratings(user_set, weights)
     X_train, Y_train, W_train = get_biz_vectors('train', ratings, biz_weights)
+    print sum(W_train)
     l.fit(X_train, Y_train, W_train)
     return l.predict
 
@@ -398,7 +399,8 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-
+    run( bayesianGaussianMixture, random_forests, 2 )
+    exit()
     cluster_nums = range(1,25)
     y = []
     for i in cluster_nums:
