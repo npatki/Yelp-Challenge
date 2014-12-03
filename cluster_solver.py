@@ -106,7 +106,7 @@ def regress(ratings, test=0):
         if i == test:
             continue
 
-        filename = '../data/biz_features_%d.csv' % i
+        filename = '../data/nl_biz_features_%d.csv' % i
         X, Y = get_input_output(ratings, filename)
         X_train.extend(X)
         Y_train.extend(Y)
@@ -126,7 +126,7 @@ def regress(ratings, test=0):
     print 'Training error per review:'
     print sum(abs(Y_prime-Y_train))/len(Y_train)
 
-    testfile = '../data/biz_features_%d.csv' % test
+    testfile = '../data/nl_biz_features_%d.csv' % test
     X_test, Y_test = get_input_output(ratings, testfile)
 
     # cap the predictions to values between 1 and 5

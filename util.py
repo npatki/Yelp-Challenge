@@ -93,7 +93,7 @@ def get_user_vectors(process):
     ID_out = []
 
     for i in partition_list:
-        filename = '../data/user_features_%d.csv' % i
+        filename = '../data/nl_user_features_%d.csv' % i
 
         with open(filename, 'rb') as csvfile:
             lines = csvfile.readlines()
@@ -121,7 +121,7 @@ def get_biz_vectors(process, ratings, weights = None):
     biz_out = []
 
     for i in partition_list:
-        filename = '../data/biz_features_%d.csv' % i
+        filename = '../data/nl_biz_features_%d.csv' % i
         X, Y, biz_list = get_biz_input_output(ratings, filename)
         X_out.extend(X)
         Y_out.extend(Y)

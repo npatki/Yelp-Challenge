@@ -72,6 +72,8 @@ def LoadBusinessInformation(business_file, biz_types):
                 if word == typ:
                     type_indexes[j] = i
 
+        print "indexs = ", type_indexes
+        
         # cycle through bulk data and make sets of biz type for businesses
         for line in lines[1:]:
         
@@ -140,10 +142,12 @@ if __name__ == '__main__':
 
     # list of business types
     biz_types = [
-        'Wine Bars','Jazz & Blues', 'Gay Bars', 'American (Traditional)',
-        'Breweries', 'Karaoke', 'Dive Bars', 'Restaurants', 'Bars',
-        'Lounges', 'Dance Clubs', 'Sports Bars', 'Pubs', 'Music Venues']
-    
+        'Wine_Bars','Jazz', 'Gay_Bars', 'American_Traditional',
+        'Breweries', 'Karaoke', 'Dive_Bars', 'Restaurants', 'Bars',
+        'Lounges', 'Dance_Clubs', 'Sports_Bars', 'Pubs', 'Music_Venues'
+    ]
+        
+   
     # put biz types into dictionary
     ntypes = len(biz_types)
     typeDict = dict( zip(biz_types, range(ntypes)) )
@@ -247,7 +251,7 @@ if __name__ == '__main__':
     # print output data to partioned files
     for n in range(num_user_partitions):
         writeLines = outputLines[n*numLines:(n+1)*numLines]
-        with open("../data/user_features_%d.csv" % n, 'w') as out:
+        with open("../data/nl_user_features_%d.csv" % n, 'w') as out:
             out.write(' '.join((str(j) for j in header)) + '\n')
             for vector in writeLines:
                 out.write(' '.join((str(j) for j in vector)) + '\n')

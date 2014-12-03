@@ -30,6 +30,7 @@ OUT = [
 # TODO: recalculate ratings + running the regression scripts
 feature_names = [
     'ID',
+
     'casual_true', 'casual_false', 'casual_missing',
     'classy_true', 'classy_false', 'classy_missing',
     'divey_true', 'divey_false', 'divey_missing',
@@ -39,20 +40,34 @@ feature_names = [
     'toursity_true', 'touristy_false', 'touristy_missing',
     'trendy_true', 'trending_false', 'trendy_missing',
     'upscale_true', 'upscale_false', 'upscale_missing',
+    
     'credit_true', 'credit_false', 'credit_missing',
-    'delivery_true', 'delivery_false', 'delivery_missing',
+    'coat_true', 'coat_false', 'coat_missing',
     'kids_true', 'kids_false', 'kids_missing',
     'groups_true', 'groups_false', 'groups_missing',
+    'dancing_true', 'dancing_false', 'dancing_missing',
     'tv_true', 'tv_false', 'tv_missing',
     'outdoor_true', 'outdoor_false', 'outdoor_missing',
     'waiter_true', 'waiter_false', 'waiter_missing',
+    'happyhour_true', 'happyhour_false', 'happyhour_missing',
+    
+    'dj_true', 'dj_false', 'dj_missing',
+    'jukebox_true', 'jukebox_false', 'jukebox_missing',
+    'live_true', 'live_false', 'live_missing',
+    'video_true', 'video_false', 'video_missing',
+    'karaoke_true', 'karaoke_false', 'karaoke_missing',
+    'background_true', 'background_false', 'background_missing',
+    
     'full_bar', 'beer_and_wine', 'none', 'alcohol_missing',
-    'Smoking', 'No_Smoking', 'Outdoor_Smoking', 'Smoking_missing',
     'casual', 'dressy', 'formal', 'attire_missing',
+    'Quiet', 'Average_Noise', 'Loud', 'Very_Loud', 'noise_missing',
+    'Smoking', 'No_Smoking', 'Outdoor_Smoking', 'Smoking_missing',
     '$', '$$', '$$$', '$$$$', 'price_range_missing',
+    
     'Wine_Bars','Jazz', 'Gay_Bars', 'American_Traditional',
     'Breweries', 'Karaoke', 'Dive_Bars', 'Restaurants', 'Bars',
     'Lounges', 'Dance_Clubs', 'Sports_Bars', 'Pubs', 'Music_Venues',
+    
     'phoenix', 'las_vegas', 'madison', 'waterloo', 'edinburgh',
     'distance','review_count', 'stars'
 ]
@@ -103,6 +118,51 @@ class AmbienceExtractor(object):
 
         return vector
 
+class MusicExtractor(object):
+
+   
+    # NOTE: we are ignoring "playlist" (one one point)
+    music_types = [
+            'dj', 
+            'jukebox', 
+            'live', 
+            'video', 
+            'karaoke', 
+            'background_music', 
+    ]
+
+
+    # deal with missing values by creating a binary
+    # vector to represent true, false, missing
+    vectors = {
+        'true': [1, 0, 0],
+        'false': [0, 1, 0],
+        'missing': [0, 0, 1]
+    }
+
+    def __call__(self, data):
+        """Return binary feature vector with 1's that
+        correspond to the appropriate ambiances."""
+
+        vector = []
+
+        if 'Good For' in data['attributes']:
+            music_data = data['attributes']['Good For']
+
+            for music in self.music_types:
+                if music in music_data:
+                    if music_data[music]:
+                        vector.extend(copy(self.vectors['true']))
+                    else:
+                        vector.extend(copy(self.vectors['false']))
+                else:
+                    vector.extend(copy(self.vectors['missing']))
+        else:
+            for i in xrange(len(self.music_types)):
+                vector.extend(copy(self.vectors['missing']))
+
+        return vector
+
 
 class BooleanAttributesExtractor(object):
 
@@ -141,6 +201,8 @@ class BooleanAttributesExtractor(object):
                 vector.extend(copy(self.vectors['missing']))
 
         return vector
+
+
 
 
 class StringAttributesExtractor(object):
@@ -319,6 +381,7 @@ if __name__ == '__main__':
     extractors = [
         AmbienceExtractor(),
         BooleanAttributesExtractor(),
+        MusicExtractor(),
         StringAttributesExtractor(),
         CategoryExtractor(),
         CityExtractor(),
