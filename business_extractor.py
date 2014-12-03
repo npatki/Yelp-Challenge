@@ -39,27 +39,20 @@ feature_names = [
     'toursity_true', 'touristy_false', 'touristy_missing',
     'trendy_true', 'trending_false', 'trendy_missing',
     'upscale_true', 'upscale_false', 'upscale_missing',
-    'breakfast_true', 'breakfast_false', 'breakfast_missing',
-    'brunch_true', 'brunch_false', 'brunch_missing',
-    'dessert_true', 'dessert_false', 'dessert_missing',
-    'dinner_true', 'dinner_false', 'dinner_missing',
-    'latenight_true', 'latenight_false', 'latenight_missing',
-    'lunch_true', 'lunch_false', 'lunch_missing',
     'credit_true', 'credit_false', 'credit_missing',
     'delivery_true', 'delivery_false', 'delivery_missing',
-    'dogs_true', 'dogs_false', 'dogs_missing',
     'kids_true', 'kids_false', 'kids_missing',
     'groups_true', 'groups_false', 'groups_missing',
     'tv_true', 'tv_false', 'tv_missing',
     'outdoor_true', 'outdoor_false', 'outdoor_missing',
     'waiter_true', 'waiter_false', 'waiter_missing',
     'full_bar', 'beer_and_wine', 'none', 'alcohol_missing',
+    'Smoking', 'No_Smoking', 'Outdoor_Smoking', 'Smoking_missing',
     'casual', 'dressy', 'formal', 'attire_missing',
     '$', '$$', '$$$', '$$$$', 'price_range_missing',
-    'Mexican','American_Traditional', 'Fast_Food',
-    'Pizza', 'Sandwiches', 'Nightlife', 'Bars', 'Food',
-    'American_New', 'Italian', 'Chinese', 'Burgers',
-    'Breakfast_Brunch', 'Japanese',
+    'Wine_Bars','Jazz', 'Gay_Bars', 'American_Traditional',
+    'Breweries', 'Karaoke', 'Dive_Bars', 'Restaurants', 'Bars',
+    'Lounges', 'Dance_Clubs', 'Sports_Bars', 'Pubs', 'Music_Venues',
     'phoenix', 'las_vegas', 'madison', 'waterloo', 'edinburgh',
     'distance','review_count', 'stars'
 ]
@@ -111,49 +104,6 @@ class AmbienceExtractor(object):
         return vector
 
 
-class GoodForExtractor(object):
-
-    all_purposes = [
-        'breakfast',
-        'brunch',
-        'dessert',
-        'dinner',
-        'latenight',
-        'lunch'
-    ]
-
-    # deal with missing values by creating a binary
-    # vector to represent true, false, missing
-    vectors = {
-        'true': [1, 0, 0],
-        'false': [0, 1, 0],
-        'missing': [0, 0, 1]
-    }
-    
-    def __call__(self, data):
-        """Return binary feature vector with 1's that
-        correspond to the appropriate ambiences."""
-
-        vector = []
-
-        if 'Good For' in data['attributes']:
-            purposes = data['attributes']['Good For']
-
-            for purpose in self.all_purposes:
-                if purpose in purposes:
-                    if purposes[purpose]:
-                        vector.extend(copy(self.vectors['true']))
-                    else:
-                        vector.extend(copy(self.vectors['false']))
-                else:
-                    vector.extend(copy(self.vectors['missing']))
-        else:
-            for i in xrange(len(self.all_purposes)):
-                vector.extend(copy(self.vectors['missing']))
-
-        return vector
-
-
 class BooleanAttributesExtractor(object):
 
     # attribute that have True/False values
@@ -165,7 +115,8 @@ class BooleanAttributesExtractor(object):
         'Good For Dancing',
         'Has TV',
         'Outdoor Seating',
-        'Waiter Service'
+        'Waiter Service',
+        'Happy Hour'
     ]
 
 
@@ -200,12 +151,24 @@ class StringAttributesExtractor(object):
         'beer_and_wine',
         'none'
     ]
-
     attires = [
         'casual',
         'dressy',
         'formal'
     ]
+    noise_levels = [
+            'quiet',
+            'average',
+            'loud',
+            'very_loud'
+    ]
+    smoking = [
+            'yes', 
+            'no', 
+            'outdoor'
+    ]
+    
+    # also price ranges
     prices = [1,2,3,4]
  
     def __call__(self, data):
@@ -237,6 +200,33 @@ class StringAttributesExtractor(object):
                 vector.append(0)
             vector.append(1)
 
+        # add noise level features
+        if 'Noise Level' in data['attributes']:
+            for noise in self.noise_levels:
+                if data['attributes']['Noise Level'] == noise:
+                    vector.append(1)
+                else:
+                    vector.append(0)
+            vector.append(0)
+        else:
+            for noise in self.noise_levels:
+                vector.append(0)
+            vector.append(1)
+
+        # add smoking features
+        if 'Smoking' in data['attributes']:
+            for smoke in self.smoking:
+                if data['attributes']['Smoking'] == smoke:
+                    vector.append(1)
+                else:
+                    vector.append(0)
+            vector.append(0)
+        else:
+            for smoke in self.smoking:
+                vector.append(0)
+            vector.append(1)
+
+
         # add price range features
         if 'Price Range' in data['attributes']:
             for price in self.prices:
@@ -246,7 +236,7 @@ class StringAttributesExtractor(object):
                     vector.append(0)
             vector.append(0)
         else:
-            for attire in self.attires:
+            for price in self.prices:
                 vector.append(0)
             vector.append(1)
 
@@ -262,9 +252,8 @@ class CategoryExtractor(object):
     # list of business types
     all_categories = [
         'Wine Bars','Jazz & Blues', 'Gay Bars', 'American (Traditional)',
-        'Gay Bars', 'Breweries', 'Karaoke', 'Dive Bars', 'Restaurants',
-        'Bars', 'Lounges', 'Dance Clubs', 'Sports Bars', 'Pubs', 
-        'Music Venues']
+        'Breweries', 'Karaoke', 'Dive Bars', 'Restaurants', 'Bars',
+        'Lounges', 'Dance Clubs', 'Sports Bars', 'Pubs', 'Music Venues']
     
     def __call__(self, data):
         """Return binary feature vector with 1's that 
@@ -329,7 +318,6 @@ def RatingExtractor(data):
 if __name__ == '__main__':
     extractors = [
         AmbienceExtractor(),
-        GoodForExtractor(),
         BooleanAttributesExtractor(),
         StringAttributesExtractor(),
         CategoryExtractor(),

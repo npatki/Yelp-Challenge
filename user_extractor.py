@@ -141,9 +141,8 @@ if __name__ == '__main__':
     # list of business types
     biz_types = [
         'Wine Bars','Jazz & Blues', 'Gay Bars', 'American (Traditional)',
-        'Gay Bars', 'Breweries', 'Karaoke', 'Dive Bars', 'Restaurants',
-        'Bars', 'Lounges', 'Dance Clubs', 'Sports Bars', 'Pubs', 
-        'Music Venues']
+        'Breweries', 'Karaoke', 'Dive Bars', 'Restaurants', 'Bars',
+        'Lounges', 'Dance Clubs', 'Sports Bars', 'Pubs', 'Music Venues']
     
     # put biz types into dictionary
     ntypes = len(biz_types)
