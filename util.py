@@ -1,6 +1,10 @@
 from collections import defaultdict
 from user_extractor import LoadReviewInformation
 import numpy as np
+from copy import deepcopy as copy
+from pandas.tools.plotting import parallel_coordinates
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 REVIEW_FILE = '../data/yelp_academic_dataset_review.json'
 reviews = LoadReviewInformation(REVIEW_FILE)
@@ -168,3 +172,57 @@ def get_biz_input_output(ratings, filename):
                 biz_list.append(biz)
 
     return X, Y, biz_list
+
+
+def plot_clusters(Xdata, labels, process, ax=None, color=None,
+                     use_columns=False, xticks=None, colormap=None,
+                     **kwds):
+    """Get vectors representing the users.
+    
+    :param process: either 'test', 'validate', 'train', or 'all'
+    :returns X_out, ID_out, a list of user vectors for that process,
+            followed by a list of corresponding user IDs"""
+    partition_list = MAPPING[process]
+
+    # determine cluster parameters
+    n = len(labels)
+    class_min = float(min(labels))
+    class_max = float(max(labels))
+
+    # Read header
+    filename = '../data/user_features_%d.csv' % partition_list[0]
+    with open(filename, 'rb') as csvfile:
+        lines = csvfile.readlines()
+        header = lines[0].split()
+    header = header[1:]
+
+    # set the x axis to equally spaced
+    x = range(len(Xdata[0]))
+
+    # set plotting parameters
+    Colorm = plt.get_cmap(colormap)
+    fig = plt.figure()
+    ax = plt.gca()
+
+    # plot data points
+    for i in range(n):
+        y = Xdata[i]
+        kls = labels[i]
+        ax.plot(x, y, color=Colorm((kls - class_min)/(class_max-class_min)), **kwds)
+
+    # plot vertical lines
+    for i in x:
+        ax.axvline(i, linewidth=1, color='black')
+
+    # format plot
+    ax.set_xticks(x)
+    #ax.set_xticklabels(header, rotation = 'vertical')
+    ax.set_xlim(x[0], x[-1])
+    ax.legend(loc='upper right')
+    ax.grid()
+
+    bounds = np.linspace(class_min,class_max,10)
+    #cax,_ = mpl.colorbar.make_axes(ax)
+    #cb = mpl.colorbar.ColorbarBase(cax, cmap=Colorm, spacing='proportional', ticks=bounds, boundaries=bounds, format='%.2f')
+
+    plt.show()
