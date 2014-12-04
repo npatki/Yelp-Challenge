@@ -250,7 +250,7 @@ def kMeans(num_clusters, learner):
 
     classes = kMeans.predict(scaled_vectors)
 
-    #plot_clusters(scaled_vectors, classes, 'train')
+    plot_clusters(scaled_vectors, classes, 'train')
 
     # create a dictionary where a cluster # maps to a list of
     # user IDs belonging to that cluster
@@ -407,7 +407,7 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-    run( kMeans, lasso, 2 )
+    run( kMeans, lasso, 5 )
     exit()
     cluster_nums = range(1,25)
     y = []
