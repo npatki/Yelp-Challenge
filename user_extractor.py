@@ -221,12 +221,16 @@ if __name__ == '__main__':
             mean = float(S1) / count
             variance = float(S2)/count - mean**2
 
-            # correct freature vector
+            # correct freature vector ratings 
             for i in xrange(ntypes):
                 typeCount = featureVector[i]
                 if typeCount > 0:
                     featureVector[ntypes + i] /= typeCount
                     featureVector[ntypes + i] -= avgRating
+
+            # correct feature vector counts so that ratings give percentage
+            for i in xrange(ntypes):
+                featureVector[i] /= float(count)
 
             # add extra features
             featureVector[-1] = avgRating

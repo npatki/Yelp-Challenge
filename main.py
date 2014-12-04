@@ -1,6 +1,6 @@
 from collections import defaultdict
 from sklearn import (
-    cluster, linear_model, ensemble, neighbors, preprocessing, mixture
+    cluster, linear_model, ensemble, neighbors, preprocessing, mixture, decomposition
 )
 from util import *
 import numpy as np
@@ -259,6 +259,8 @@ def kMeans(num_clusters, learner):
 
     classes = kMeans.predict(scaled_vectors)
 
+    plot_clusters(scaled_vectors, classes, 'train')
+
     # create a dictionary where a cluster # maps to a list of
     # user IDs belonging to that cluster
     groups = defaultdict(list)
@@ -327,7 +329,9 @@ def random_forests(user_set, weights = None):
 
 def ridge(user_set, weights = None):
     """Ridge regression learner that uses the validation set to tune alpha."""
-    alphas = np.arange(0.1, 1, 0.1)
+    #alphas = np.arange(0.1, 1, 0.1)
+    alphas = np.logspace(-3, 3, 100) #FIXME
+    errors = [] # FIXME
 
     ratings, biz_weights = compute_ratings(user_set, weights)
     X_train, Y_train, W_train = get_biz_vectors('train', ratings, biz_weights)
@@ -339,20 +343,25 @@ def ridge(user_set, weights = None):
 
     for alpha in alphas:
         l = linear_model.Ridge(alpha=alpha, normalize=False)
-        l.fit(X_train, Y_train, W_train)
+        l.fit(X_train, Y_train)
 
         Y_predicted = l.predict(X_validate)
-        val_error = get_error(Y_validate, Y_predicted, W_validate)
+        val_error = get_error(Y_validate, Y_predicted)
+        errors.append(val_error) #FIXME
 
         if val_error < best_val:
             best_val = val_error
             best_predictor = l.predict 
 
+    #FIXME
+    plt.semilogx(alphas,errors,'kx-')
+    plt.show()
+
     return best_predictor
 
 def lasso(user_set):
     """Lasso learner that uses the validation set to tune alpha."""
-    alphas = np.arange(0.1, 1, 0.1)
+    alphas = np.logspace(-3,0,10)
 
     ratings, NA = compute_ratings(user_set)
     X_train, Y_train, NA = get_biz_vectors('train', ratings)
@@ -407,7 +416,7 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-    run( bayesianGaussianMixture, random_forests, 2 )
+    run( kMeans, lasso, 5 )
     exit()
     cluster_nums = range(1,25)
     y = []
