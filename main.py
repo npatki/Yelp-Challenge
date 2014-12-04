@@ -250,7 +250,7 @@ def kMeans(num_clusters, learner):
 
     classes = kMeans.predict(scaled_vectors)
 
-    plot_clusters(scaled_vectors, classes, 'train')
+    #plot_clusters(scaled_vectors, classes, 'train')
 
     # create a dictionary where a cluster # maps to a list of
     # user IDs belonging to that cluster
@@ -320,9 +320,7 @@ def random_forests(user_set, weights = None):
 
 def ridge(user_set, weights = None):
     """Ridge regression learner that uses the validation set to tune alpha."""
-    #alphas = np.arange(0.1, 1, 0.1)
-    alphas = np.logspace(-3, 3, 100) #FIXME
-    errors = [] # FIXME
+    alphas = np.logspace(-1, 2, 10)
 
     ratings, biz_weights = compute_ratings(user_set, weights)
     X_train, Y_train, W_train = get_biz_vectors('train', ratings, biz_weights)
@@ -338,15 +336,10 @@ def ridge(user_set, weights = None):
 
         Y_predicted = l.predict(X_validate)
         val_error = get_error(Y_validate, Y_predicted)
-        errors.append(val_error) #FIXME
 
         if val_error < best_val:
             best_val = val_error
             best_predictor = l.predict 
-
-    #FIXME
-    plt.semilogx(alphas,errors,'kx-')
-    plt.show()
 
     return best_predictor
 
@@ -407,12 +400,12 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-    run( kMeans, lasso, 5 )
-    exit()
+    #run( kMeans, lasso, 5 )
+   
     cluster_nums = range(1,25)
     y = []
     for i in cluster_nums:
-        y.append( run( bayesianGaussianMixture, random_forests, i ) )
+        y.append( run( kMeans, ridge, i ) )
     
     plt.plot(cluster_nums, y, 'kx-')
     plt.xlabel('Number of Clusters')
