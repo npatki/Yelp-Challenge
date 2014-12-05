@@ -177,11 +177,10 @@ def get_biz_input_output(ratings, filename):
 def plot_clusters(Xdata, labels, process, ax=None, color=None,
                      use_columns=False, xticks=None, colormap=None,
                      **kwds):
-    """Get vectors representing the users.
+    """Plot clusters representing the users.
     
-    :param process: either 'test', 'validate', 'train', or 'all'
-    :returns X_out, ID_out, a list of user vectors for that process,
-            followed by a list of corresponding user IDs"""
+    :param Xdata: either 'test', 'validate', 'train', or 'all'
+    :returns: the handle of the clustering plot"""
     partition_list = MAPPING[process]
 
     # determine cluster parameters
