@@ -314,7 +314,7 @@ def random_forests(user_set):
     l = ensemble.RandomForestRegressor()
     ratings = compute_ratings(user_set)
     X_train, Y_train = get_biz_vectors('train', ratings)
-    l.fit(X_train, Y_train, W_train)
+    l.fit(X_train, Y_train)
     return l.predict
 
 
@@ -399,17 +399,15 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-    run( kMeans, lasso, 3 )
-   
-    '''
+    #run( gaussianMixture, lasso, 3 )
+  
+    print "gaussian Mixture, ridge"
     cluster_nums = range(1,25)
     y = []
     for i in cluster_nums:
-        y.append( run( bayesianGaussianMixture, random_forests, i ) )
+        y.append( run( gaussianMixture, bayesian_ridge, i ) )
     
     plt.plot(cluster_nums, y, 'kx-')
     plt.xlabel('Number of Clusters')
     plt.ylabel('Average Validation Error')
-    print "bgm, rf"
     plt.show()
-    '''
