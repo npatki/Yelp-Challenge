@@ -333,4 +333,3 @@ def plot_cluster_averages(Xdata, labels, process, ax=None, color=None,
     #cb = mpl.colorbar.ColorbarBase(cax, cmap=Colorm, spacing='proportional', ticks=bounds, boundaries=bounds, format='%.2f')
 
     plt.show()
-
