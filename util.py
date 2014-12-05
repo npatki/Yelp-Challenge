@@ -2,7 +2,7 @@ from collections import defaultdict
 from user_extractor import LoadReviewInformation, LoadBusinessFeatures
 import numpy as np
 from copy import deepcopy as copy
-from pandas.tools.plotting import parallel_coordinates
+# from pandas.tools.plotting import parallel_coordinates
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 

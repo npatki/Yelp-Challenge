@@ -14,6 +14,11 @@
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{subcaption}
+
+% \usepackage{algorithm}
+% \usepackage{algorithmic}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
 % \pagenumbering{gobble}
 
 % \setlength{\parindent}{0pt}
@@ -50,7 +55,7 @@ For example, assume a particular group we learn in step 1 contains users who enj
 
 \begin{figure}[h!]
     \centering
-    %\includegraphics[width=0.9\textwidth, height=6cm]{system}
+    \includegraphics[width=0.9\textwidth, height=6cm]{system}
     \caption{The architecture for the overall system. Inputs are colored blue while the output is shown in green. Dotted lines represents inputs during training, and solid lines represent the flow of information at testing time. The hidden variable is used to select a model, or a mixture of models, that the business data is tested on. The output is the rating.}
     \label{fig:system}
 \end{figure} 
@@ -89,30 +94,108 @@ A similar approach is taken with actual categorical features. For instance, the 
 Additional features are engineered from the data available. The Yelp dataset is based off data from 5 metro areas: Phoenix, Las Vegas, Madison, Waterloo, and Edinburgh. The business attributes lists the city in which the restaurant is located, but not the metro area. This is problematic since intuitively the metro area should have an impact on the rating since the five cities are very different in nature. However, the latitude and longitude of the locations is provided. Using these coordinates along with the coordinates of the centers of the major cities, as provided by Wikipedia, the metro area can easily be determined by finding the closest center. Therefore a categorical feature can be developed for the metro area much like the attire example presented previously. Additionally, distance to the center of the city might be important so a feature is added that gives the distance to the center of the city based off the coordinates.
 
 \section{Methodology}
-After constructing the feature vectors, our data now consists of a set $B$ of business vectors, and a set $U$ of user vectors. Assume that every $b \in B$ is the business feature vector described in the previous section. We also have access a set of ratings, $R$, where a single rating is determined by a user and a business. Let $r_{ub} \in R$ denote the rating given by user $u$ to business $b$. We define a function that takes in a set of users and a business, and outputs the average rating given to the business only by the users in the set. Mathematically, this is:
+After constructing the feature vectors, our data now consists of a set $B$ of business vectors, and a set $U$ of user vectors. Assume the vectors are constructed as described in the previous section. We also have access a set of ratings, $R$, where a single rating is determined by a user and a business. Let $r_{ub} \in R$ denote the rating given by user $u$ to business $b$. We define a function that takes in a set of users and a business, and outputs the average rating given to the business only by the users in the set. Mathematically, this is:
 
-\[f(U_s, b) = \frac{\sum\limits_{u \in U_i} r_{ub}}{|U_i|}\]
+\begin{equation}
+\label{basic}
+f(U_s, b) = \frac{\sum\limits_{u \in U_i} r_{ub}}{|U_i|}
+\end{equation}
 
-Where $U_i \subseteq U_s$ is the set of users who have given a rating to business $b$. If $U_i = \emptyset$, then this function is not defined. We make user of this function in our overall system after we discover the hidden variable.
+Where $U_i \subseteq U_s$ is the set of users who have given a rating to business $b$. If $U_i = \emptyset$, then this function is not defined. We make use of this function in our overall system after we discover the hidden variable.
 
 We now present three separate ways we formulated the problem, and different systems we built to explore each.
 
-\subsection{KMeans Clustering}
-Perhaps the most naive way to calculate the hidden variable is to perform k-means clustering analysis using the set $U$, and to use the cluster as the hidden variable. If we let $k$ be the number of clusters, then the k-means clustering will return sets of users $U_0, U_1, \ldots, U_k$ such that a user only belongs to one of the sets ($U_i \cap U_j = \emptyset$ for any $U_i \neq U_j$). Each of the clusters can then be trained independently using any method of inference.
+\subsection{K-Means Clustering}
+Perhaps the most naive way to calculate the hidden variable is to perform k-means clustering analysis using the set $U$ of training user vectors, and to use the cluster as the hidden variable. The different clusters are then trained separately. If we let $k$ be the number of clusters, then the k-means clustering will return sets of users $U_0, U_1, \ldots, U_{k-1}$ such that a user only belongs to one of the sets ($U_i \cap U_j = \emptyset$ for any $U_i \neq U_j$). Each of the clusters can then be trained independently using any method of inference.
 
-Given the output of KMeans clustering, we define the inference problem inputs and outputs in terms of the business vectors. As inputs, we have the set of businesses that some user in the cluster has rated. If the cluster is $U_i$, we denote the relevant set of businesses as $B_i$, where for every $b \in B_i$, $r_{ub}$ exists for at least one $u \in U_i$. Then the input for the inference is $B_i$ and the output is the set $\{f(U_i, b)\}$, $\forall b \in B_i$.
+Given the output of k-means clustering, we define the inference problem inputs and outputs in terms of the business vectors. As inputs, we have the set of businesses that some user in the cluster has rated. If the cluster is $U_i$, we denote the relevant set of businesses as $B_i$, where for every $b \in B_i$, $r_{ub}$ exists for at least one $u \in U_i$. Then the input for the inference is $B_i$ and the output is the set $\{f(U_i, b)\}$, $\forall b \in B_i$.
 
 It is important to note that for two different clusters of users, the businesses the users have rated are not necessarily identical. That is, for $U_i, U_j$ where $U_i \neq U_j$, it is not necessarily the case that $B_i = B_j$. Furthermore, if there does exist a $b \in B_i$ and $b \in B_j$, then it is not necessarily the case that $f(U_i, b) = f(U_j, b)$. This means that the same business vectors can be trained with different expected output based on the clusters. It represents our belief that the users in different clusters have different preferences, so they may rate the same business differently. 
 
-\subsection{KNeighbors}
+Then, we can predict the rating given a user $u$ and a business $b$ by first finding its cluster, and then running the result of the inference method on the business vector.\\
+
+\begin{algorithmic}[1]
+\Function{predict}{$u, b$}
+\State $i \gets cluster(u)$ \Comment{A cluster number.}
+\State $method \gets inference(cluster=i)$ \Comment{The trained inference predictor for the cluster.}
+\State \Return $method(b)$
+\EndFunction
+\end{algorithmic}
+\medskip
+
+Note that the complexity of this grows with the number of clusters we choose. With k clusters, finding the cluster in line 2 and the appropriate cluster's trained inference method in line 3 take $O(k)$ time.
+
+\subsection{K-Neighbors}
+A different approach determines the hidden clusters dynamically at run time. In this approach, we do not hard-code any clusters but decide them based on the input variables when testing. We perform a nearest-neighbors analysis, and let that particular set of users be the cluster used to perform the inference. Let $k$ be an integer that represents the number of neighbors we will use. Then at testing time, we find the $k$ nearest neighors and peform an inference on these neighbors dynamically.\\
+
+\begin{algorithmic}[1]
+\Function{predict}{$u, b$}
+\State $U_s \gets kNeighbors(u)$, $Y \gets \small[ \small]$
+\State $B_i \gets businesses(U_s)$ \Comment{Businesses users in $U_s$ have rated.}
+\For {$b \in B_i$}
+\State $r = f(U_s, b)$ \Comment{Returns average rating within $U_s$.}
+\State $Y \gets Y + r$
+\EndFor
+\State $inference = train(input=B_i, output=Y)$ \Comment{Prediction method.}
+\State \Return $inference(b)$
+\EndFunction
+\end{algorithmic}
+\medskip
+
+Here, $U_s$ is the set of k nearest neighbors to $u$. In step 8, we train to learn the ratings that only users in set $U_s$ have given. This enables us to find the most similar users to the queried user, $u$, in real-time to dynamically train a model fitted to the user. Similar to the k-means algorithm, every set $U_s$ of users may be trained to learn the business ratings differently. Even though this method requires almost no work during training, it becomes expensive at test time because it is necessary to perform inference.
+
+Note that the total number of unique sets $U_s$ of size $k$ is $|U| \choose k$. In theory, we could complete an inference algorithm on each of these sets during testing time, but we found this to be infeasible with a growing size of $U$ and $k$. Furthermore, dynamically performing the inference allows the model to be more flexible in that we can add more users to $U$ at any point, or change the parameter $k$. The downside is that each prediction takes a longer time to run because there is a complete inference problem that must be solved for every queried $u, b$ pair. 
 
 \subsection{Mixture of Gaussians}
+Our third model treats clustering using a probabilistic approach. Assuming that the users in $U$ are a mixture of several gaussian distributions allows us to treat a single user, $u$, as probabilistically belonging to different clusters. If we choose $k$ as the number of mixtures (our hyperparameter), this means that asking to cluster a user $u$ will return a list of size $k$, where each element $i$ is in $[0, 1]$. This respresents the probability of user $u$ belonging to mixture $i$.
 
-\subsection{Second Factor}
-\subsubsection{MLE}
-\subsubsection{Lasso}
-\subsubsection{Bayesian Ridge}
-\subsubsection{Random Forests}
+During training time we perfom $k$ inference algorithms, one for each mixture, similar to the k-means method. However, instead of completely partitioning the users into clusters, we use all users and weight them based on how likely they are to belong there. Let $p_i(u)$ be the probability that user $u$ belongs to cluster $i$. Our calculation of the rating then takes a different form.
+
+\begin{equation}
+\label{weighted}
+g(i, b) = \frac{\sum\limits_{u \in U} r_{ub}p_i(u)}{\sum\limits_{u \in U} p_i(u)}
+\end{equation}
+
+Here $i$ is the index assigned to a particular mixture. For each mixture, we consider all the users in $U$, but the ratings of these users are weighted according to how likely it is the user belongs to $i$. We can think of this as a more general form of Equation \eqref{basic}, which treats the weights as a continuous probability in $[0, 1]$ instead of a discrete value $\{0, 1\}$.
+
+During testing time, we are given a user $u$ and can similarly calculate the probability that the user belongs to the different mixtures. We can use this to either choose the maximum liklihood estimate, or weight the different clusters to convey our uncertainty.
+
+
+\subsubsection{Maximum Liklihood Estimate}
+In the case of the maximum liklihood estimate, this strategy works similarly to k-means clustering. Though the underlying gaussian mixture model is different, we perform the same analysis at testing time. Given a user $u$, we find the cluster, $i$, that has the maximum probability $p_i(u)$. We can then use a trained inference model for the $i^{th}$ cluster with a business, $b$, to compute our prediction of the rating.
+
+\subsubsection{Probabilistic Weights}
+In this case, we must perform the trained inference for each mixture and output the weighted result of all mixtures, according to the probabilities of the user belong to that mixture.\\
+
+\begin{algorithmic}[1]
+\Function{predict}{$u, b$}
+\State $p \gets mixture(u)$ \Comment{List of probabilities.}
+\State $total \gets 0$
+\For{$p_i \in p$} \Comment{Weight of mixture $i$.}
+\State $method \gets inference(cluster=i)$ \Comment{Trained inference for mixture $i$.}
+\State $total \gets total + p_i(method(b))$
+\EndFor
+\State \Return $total$
+\EndFunction
+\end{algorithmic}
+\medskip
+
+Similar to the k-means algorithm, this algorithm also grows linearly with the number of mixtures, $k$, because we enter the loop in line 4 exactly $k$ times. Note that the sum of all entries in $p$ must equal to 1, so it is not necessary to normalize the value stored in the $total$ variable.
+
+\subsection{Inference Algorithms}
+In each of the above cases, we have mentioned that after discovering an individual cluster, or mixture, we are able to perform an inference algorithm. Any inference algorithm we use must be able to accept, as inputs, a list of business features, $B$, along with the expected output $Y$, which are the corresponding ratings. It must output a function that is able to predict a rating, $r$ given a business vector $b$. This part can be directly supervised because we are provided with all the ratings each user has given to a business.
+
+We consider 5 different algorithms when performing the inference.
+
+\begin{itemize}
+\item MLE: The maximum liklihood estimate just returns the average rating from all the given ratings. This is used as a benchmark for testing how the other algorithms compare.
+\item Ridge: This is the ridge regression, as implemented in class.
+\item Lasso: This is the lasso regression, as implemented in class.
+\item Bayesian Ridge: This is a ridge-type regression that assumes all the input data is Bayesian. We were motivated to try this because we expected a user's ratings patterns to follow roughly a bell-shaped distribution.
+\item Random Forests: This constructs rules to use for classification. We were motivated to try this because many of our features were discrete valued, and the output star ratings all lied in the range $[1, 5]$.
+\end{itemize}
+
+For each of the three hidden-variable methods (K-Means, K-Neighbors, and Mixture of Gaussians), we test the inference algorithms above after we determine the appropriate cluster, or mixture of clusters.
 
 \section{Experiments}
 \subsection{Setup}
