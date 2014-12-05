@@ -51,7 +51,8 @@ def users_validation(predictor, maximum=float('inf')):
 
         guess, actual = predictor(test_vectors[i], v)
         total_error += get_error(actual, guess)
-
+    
+    
     return total_error/float(total_users)
 
 def gaussianMixture(num_clusters, learner):
@@ -250,7 +251,7 @@ def kMeans(num_clusters, learner):
 
     classes = kMeans.predict(scaled_vectors)
 
-    #plot_clusters(scaled_vectors, classes, 'train')
+    plot_clusters(scaled_vectors, classes, 'train')
 
     # create a dictionary where a cluster # maps to a list of
     # user IDs belonging to that cluster
@@ -400,14 +401,17 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-    #run( kMeans, lasso, 5 )
+    run( kMeans, lasso, 3 )
    
+    '''
     cluster_nums = range(1,25)
     y = []
     for i in cluster_nums:
-        y.append( run( kMeans, ridge, i ) )
+        y.append( run( bayesianGaussianMixture, random_forests, i ) )
     
     plt.plot(cluster_nums, y, 'kx-')
     plt.xlabel('Number of Clusters')
     plt.ylabel('Average Validation Error')
+    print "bgm, rf"
     plt.show()
+    '''
