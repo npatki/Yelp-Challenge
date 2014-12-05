@@ -94,21 +94,23 @@ A similar approach is taken with actual categorical features. For instance, the 
 Additional features are engineered from the data available. The Yelp dataset is based off data from 5 metro areas: Phoenix, Las Vegas, Madison, Waterloo, and Edinburgh. The business attributes lists the city in which the restaurant is located, but not the metro area. This is problematic since intuitively the metro area should have an impact on the rating since the five cities are very different in nature. However, the latitude and longitude of the locations is provided. Using these coordinates along with the coordinates of the centers of the major cities, as provided by Wikipedia, the metro area can easily be determined by finding the closest center. Therefore a categorical feature can be developed for the metro area much like the attire example presented previously. Additionally, distance to the center of the city might be important so a feature is added that gives the distance to the center of the city based off the coordinates.
 
 \section{Methodology}
-After constructing the feature vectors, our data now consists of a set $B$ of business vectors, and a set $U$ of user vectors. Assume the vectors are constructed as described in the previous section. We also have access a set of ratings, $R$, where a single rating is determined by a user and a business. Let $r_{ub} \in R$ denote the rating given by user $u$ to business $b$. We define a function that takes in a set of users and a business, and outputs the average rating given to the business only by the users in the set. Mathematically, this is:
+After constructing the feature vectors, our data now consists of a set $B$ of business vectors, and a set $U$ of user vectors. Assume the vectors are constructed as described in the previous section. We also have access a set of ratings, $R$, where a single rating is determined by a user and a business. Let $r_{ub} \in R$ denote the rating given by user $u$ to business $b$.
+
+We first train the user vectors, $U$ with the hidden variable. This will return multiple sets of users, $U_s \subseteq U$.  We then define a function that takes in a set of users and a business, and outputs the average rating given to the business only by the users in the set. Mathematically, this is:
 
 \begin{equation}
 \label{basic}
 f(U_s, b) = \frac{\sum\limits_{u \in U_i} r_{ub}}{|U_i|}
 \end{equation}
 
-Where $U_i \subseteq U_s$ is the set of users who have given a rating to business $b$. If $U_i = \emptyset$, then this function is not defined. We make use of this function in our overall system after we discover the hidden variable.
+Where $U_i \subseteq U_s$ is the set of users who have given a rating to business $b$. If $U_i = \emptyset$, then this function is not defined. 
 
-We now present three separate ways we formulated the problem, and different systems we built to explore each.
+We can then perform an inference method for the non-hidden variable.  We define its inputs and outputs in terms of the business vectors, $B$. As inputs, we have the set of businesses that some user in the set has rated. If the set is $U_s$, we denote the relevant set of businesses as $B_s$, where for every $b \in B_s$, $r_{ub}$ exists for at least one $u \in U_s$. Then the inference is trained with input $B_s$ and expected output $\{f(U_s, b)\}$, $\forall b \in B_s$.
+
+We now present the three separate ways we formulated the problem to discover the sets of users, $U_s$. We also describe the methods of inference we use for the second variable.
 
 \subsection{K-Means Clustering}
 Perhaps the most naive way to calculate the hidden variable is to perform k-means clustering analysis using the set $U$ of training user vectors, and to use the cluster as the hidden variable. The different clusters are then trained separately. If we let $k$ be the number of clusters, then the k-means clustering will return sets of users $U_0, U_1, \ldots, U_{k-1}$ such that a user only belongs to one of the sets ($U_i \cap U_j = \emptyset$ for any $U_i \neq U_j$). Each of the clusters can then be trained independently using any method of inference.
-
-Given the output of k-means clustering, we define the inference problem inputs and outputs in terms of the business vectors. As inputs, we have the set of businesses that some user in the cluster has rated. If the cluster is $U_i$, we denote the relevant set of businesses as $B_i$, where for every $b \in B_i$, $r_{ub}$ exists for at least one $u \in U_i$. Then the inference is trained with input $B_i$ and expected output $\{f(U_i, b)\}$, $\forall b \in B_i$.
 
 It is important to note that for two different clusters of users, the businesses the users have rated are not necessarily identical. That is, for $U_i, U_j$ where $U_i \neq U_j$, it is not necessarily the case that $B_i = B_j$. Furthermore, if there does exist a $b \in B_i$ and $b \in B_j$, then it is not necessarily the case that $f(U_i, b) = f(U_j, b)$. This means that the same business vectors can be trained with different expected output based on the clusters. It represents our belief that the users in different clusters have different preferences, so they may rate the same business differently. 
 
