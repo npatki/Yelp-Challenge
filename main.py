@@ -182,7 +182,7 @@ def kMeans(num_clusters, learner):
 
     classes = kMeans.predict(scaled_vectors)
 
-    plot_clusters(scaled_vectors, classes, 'train')
+    #plot_single_clusters(scaled_vectors, classes, 'train')
 
     # create a dictionary where a cluster # maps to a list of
     # user IDs belonging to that cluster
@@ -321,13 +321,13 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-    run( kMeans, lasso, 3 )
+    # run( kMeans, lasso, 4)
   
-    print "gaussian Mixture, ridge"
-    cluster_nums = range(1,25)
+    print "KN, lasso"
+    cluster_nums = range(2,25)
     y = []
     for i in cluster_nums:
-        y.append( run( gaussianMixture, bayesian_ridge, i ) )
+        y.append( run( kNeighbors, random_forests, i ) )
     
     plt.plot(cluster_nums, y, 'kx-')
     plt.xlabel('Number of Clusters')
