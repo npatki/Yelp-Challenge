@@ -47,7 +47,7 @@ An additional challenge and motivation for the problem is analyzing the given da
 The overall goal is to accept, as inputs, a user and business, and to output a floating point value in $[1, 5]$ that predicts what the user will rate the business. We do this using two steps.
 
 \begin{enumerate}
-\item Categorize the users into groups who have groughly similar interests. This is the hidden variable.
+\item Categorize the users into groups who have roughly similar interests. This is the hidden variable.
 \item Separetely train each category to learn the average business rating for only the users in that group.
 \end{enumerate}
 
@@ -169,16 +169,16 @@ Note that the complexity of this grows with the number of clusters we choose. Wi
 A different approach determines the hidden clusters dynamically at run time. In this approach, we do not hard-code any clusters but decide them based on the input variables when testing. We perform a nearest-neighbors analysis, and let that particular set of users be the cluster used to perform the inference. Let $k$ be an integer that represents the number of neighbors we will use. Then at testing time, we find the $k$ nearest neighors and peform an inference on these neighbors dynamically.\\
 
 \begin{algorithmic}[1]
-\Function{predict}{$u, b$}
-\State $U_s \gets kNeighbors(u)$, $Y \gets \small[ \small]$
-\State $B_i \gets businesses(U_s)$ \Comment{Businesses users in $U_s$ have rated.}
-\For {$b \in B_i$}
-\State $r = f(U_s, b)$ \Comment{Returns average rating within $U_s$.}
-\State $Y \gets Y + r$
-\EndFor
-\State $inference = train(input=B_i, output=Y)$ \Comment{Prediction method.}
-\State \Return $inference(b)$
-\EndFunction
+	\Function{predict}{$u, b$}
+	\State $U_s \gets$ kNeighbors$(u)$, $Y \gets \small[ \small]$
+	\State $B_i \gets$ businesses$(U_s)$ \Comment{Businesses users in $U_s$ have rated.}
+	\For {$b \in B_i$}
+	\State $r = f(U_s, b)$ \Comment{Returns average rating within $U_s$.}
+	\State $Y \gets Y + r$
+	\EndFor
+	\State inference = train(input $=B_i$, output $=Y)$ \Comment{Prediction method.}
+	\State \Return inference$(b)$
+	\EndFunction
 \end{algorithmic}
 \medskip
 
@@ -208,15 +208,15 @@ In the case of the maximum liklihood estimate, this strategy works similarly to 
 In this case, we must perform the trained inference for each mixture and output the weighted result of all mixtures, according to the probabilities of the user belong to that mixture.\\
 
 \begin{algorithmic}[1]
-\Function{predict}{$u, b$}
-\State $p \gets mixture(u)$ \Comment{List of probabilities.}
-\State $total \gets 0$
-\For{$p_i \in p$} \Comment{Weight of mixture $i$.}
-\State $method \gets inference(cluster=i)$ \Comment{Trained inference for mixture $i$.}
-\State $total \gets total + p_i(method(b))$
-\EndFor
-\State \Return $total$
-\EndFunction
+	\Function{predict}{$u, b$}
+	\State $p \gets$ mixture$(u)$ \Comment{List of probabilities.}
+	\State total $\gets 0$
+	\For{$p_i \in p$} \Comment{Weight of mixture $i$.}
+	\State method $\gets$ inference(cluster $=i)$ \Comment{Trained inference for mixture $i$.}
+	\State total $\gets$ total + $p_i($method$(b))$
+	\EndFor
+	\State \Return $total$
+	\EndFunction
 \end{algorithmic}
 \medskip
 
