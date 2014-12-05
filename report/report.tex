@@ -66,20 +66,22 @@ In the next sections, we discuss constructing the feature vectors that create th
 
 \section{Features}
 
-A key to success in any machine learning problem is the selection of relevant features to accurately represent the data of interest. While algorithms are important, the success that can be achieved is often bounded by the ability of the features to accurately represent the problem. In our project, we need to develop two sets of features. The first set of features corresponds to user attributes that will be used to predict the hidden class associated with each user. The second set corresponds to business attributes that will be used to predict how a user in a given class will rate a restaurant.
+A key to success in any machine learning problem is the selection of relevant features to accurately represent the data of interest. While algorithms are important, the success that can be achieved is often bounded by the ability of the features to accurately represent the problem. In our project, we need to develop two sets of features. The first set of features corresponds to user attributes that will be used to predict the hidden class associated with each user. The second set corresponds to business attributes that will be used to predict how a user in a given class will rate a business.
 
 \subsection{User Data}
 The Yelp dataset is comprised of three relevant files: a user review file, a user attribute file, and a business attribute file. A straightforward approach would be to classify a user based purely off the data presented in the user attribute file. This file contains information about the user along with a user ID. However, the information provided is only basic with attributes such as the total number of reviews a user has written, the average of the user's ratings, and less relevant attributes such the user's full name.
 
-Therefore, we use a different approach to form user features. We still take a couple features from the user attribute file, namely the user's average rating and the total number of reviews, but most features are formed by cross referencing the user's ID with the user reviews file. With our approach, we find the reviews associated with the user's ID and store the rating and business ID associated with each review. Then from the business ID we can cross reference the business file to determine the type of restaurant.  Yelp lists categories associated with each business. For instance, every restaurant will have the string `restaurant' in its categories but might also have the string `Mexican restaurant.'
+Therefore, we use a different approach to form user features. We still take a couple features from the user attribute file, namely the user's average rating and the total number of reviews, but most features are formed by cross referencing the user's ID with the user reviews file. With our approach, we find the reviews associated with the user's ID and store the rating and business ID associated with each review. Then from the business ID we can cross reference the business file to determine the type of business.  Yelp lists categories associated with each business. For instance, every restaurant will have the string `restaurant' in its categories but might also have the string `Mexican restaurant.'
 
-This allows us to form features that describe how a user prefers different types of restaurants. In particular, there is a feature associated with the user's average rating for restaurants in each category along with another feature for the frequency a user has reviewed each category. To compensate for users that preferentially give good or bad reviews, the user's average rating is subtracted from the category-averaged rating. Therefore these features provide information on the user's preferences in restaurants, such as liking Italian food but disliking Mexican food.
+This allows us to form features that describe how a user prefers different types of businesses. In particular, there is a feature associated with the user's average rating for businesses in each category along with another feature for the frequency a user has reviewed each category. To compensate for users that preferentially give good or bad reviews, the user's average rating is subtracted from the category-averaged rating. Therefore these features provide information on the user's preferences in businesses, such as liking Italian food but disliking Mexican food.
 
 One major challenge with this approach is missing data. For the vast majority of users, there will be categories in which the user has given no reviews. For most machine learning algorithms, the data needs to be complete. To remedy this, we choose to fill missing data using data imputation. We assign the user's average review to categories in which the user has no reviews. Since we subtract by the user's average review in category ratings, this corresponds to inserting zeros for these missing features. 
 
 Typically, data imputation is not the appropriate method to solve the missing data problem for large data sets \cite{em_vs_im}. The preferred method is expectation-maximization (EM) in which the objective function is directly maximized \cite{em}. However, EM presents a few problems for our scheme. Fist, there is a large amount of missing data. For almost all users there is more than one missing feature value. In addition, many clustering algorithms do not work well with the probabilistic approach of EM. In EM, no single value is assigned to missing data points. Instead, a probability is assigned. In an iterative process estimates for this probability are updated along with density estimation parameters. Some clustering algorithms such as k-means do not perform density estimation but rather partition the feature space \cite{kmeans}. This is problematic since EM requires evaluation of the likelihood of the data.
 
-Overall, the user feature vector contains 33 features, 28 of which are associated with the average rating and number of reviews for 14 categories of restaurants. The remaining 5 features are statistical features associated with the user, such as variance of review ratings and average review rating. All of the features are described in Table~\ref{tab:user_features1} and Table~\ref{tab:user_features2}.
+Overall, the user feature vector contains 33 features, 28 of which are associated with the average rating and number of reviews for 14 categories of businesses. The remaining 5 features are statistical features associated with the user, such as variance of review ratings and average review rating. The only difference between the restaurant and nightlife problems is that the categories are different. All of the features for restaurant categories are presented in Table~\ref{tab:user_features1} with features for nightlife categories presented in Table~\ref{tab:user_features2}. Statistical features, which take the same form in both problems, are presented in Table~\ref{tab:user_features3}
+
+Similarly, for nightlife businesses the user feature vector contains 32 features. The only difference is that the business categories are slightly different. These are 
 
 \begin{table}[h!]
 	\caption{User Feature Descriptions (Restaurant Categories)}
@@ -106,7 +108,31 @@ Overall, the user feature vector contains 33 features, 28 of which are associate
 \end{table}
 
 \begin{table}[h!]
-	\caption{User Feature Descriptions (Restaurant Statistics)}
+	\caption{User Feature Descriptions (Nightlife Categories)}
+	\centering
+	\begin{tabular}{c|c|c}
+		Nightlife Category & \multicolumn{2}{c}{Feature Numbers} \\ \hline
+		& Review Frequency & Scaled Review Average \\
+		Wine Bars & 0 & 14 \\
+		Jazz Clubs & 1 & 15\\
+		Gay Bars & 2 & 16\\
+		American (Traditional) & 3 & 17\\
+		Breweries & 4 & 18\\
+		Karaoke & 5 & 19\\
+		Dive Bars & 6 & 20\\
+		Restaurants & 7 & 21\\
+		Bars & 8 & 22\\
+		Lounges & 9 & 23\\
+		Dance Clubs & 10 & 24\\
+		Sports Bars & 11 & 25\\
+		Pubs & 12 & 26\\
+		Music Venues & 13 & 27\\
+	\end{tabular}
+	\label{tab:user_features2}
+\end{table}
+
+\begin{table}[h!]
+	\caption{User Feature Descriptions (Statistics)}
 	\centering
 	\begin{tabular}{c|c}
 		Feature & Feature Number \\ \hline
@@ -116,7 +142,7 @@ Overall, the user feature vector contains 33 features, 28 of which are associate
 		Total number of user reviews & 31 \\
 		Average of total user ratings & 32 \\
 	\end{tabular}
-	\label{tab:user_features2}
+	\label{tab:user_features3}
 \end{table}
 
 \subsection{Business Data}
@@ -290,14 +316,48 @@ If we use this raw data in a K-Means clustering algorithm, we observe very poor 
 	\label{fig:better_clustering}
 \end{figure} 
 
-When we extend to four clusters we see even more separation. This is shown in Figure~\ref{fig:kmeans_4}
+When we extend to four clusters we see even more separation. This is shown in Figure~\ref{fig:kmeans_4}. Notice that now there is further separation based on preference. Clusters 1, 3, and 4 separate strongly based on ratings for restaurants with bars and nightlife. Cluster 2 strongly separates from the rest with a higher percentage of reviews on bars and restaurants.
 
 \begin{figure}[h!]
 	\centering
 	\includegraphics[width=0.9\textwidth]{kmeans4clusters_all.png}
-	\caption{Plot of user features against the feature number for four clusters. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+	\caption{Plot of user features against the feature number for four restaurant clusters. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
 	\label{fig:kmeans_4}
-\end{figure} 
+\end{figure}
+
+While it is encouraging to see cluster separation, the large number of users can cause the data to be unreadable. Therefore, the average feature values for each cluster might be informative. These average values are presented for the case of four K-Means clusters in Figure~\ref{fig:kmeans_4_avg}. It is important to note that the cluster numbering is arbitrary and does not align with the cluster numbering shown in Figure~\ref{fig:kmeans_4}. 
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{kmeans4clusters.png}
+	\caption{Cluster-averaged features plotted for every feature in four restaurant clusters. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+	\label{fig:kmeans_4_avg}
+\end{figure}
+
+We see similar trends as before with bars and nightlife being two categories that strongly separate the data. We can also see trends that are not as obvious form the previous plots. For instance, users who strongly dislike restaurants with bars and nightlife also strongly dislike American restaurants, both traditional and new. On the other hand, we notice that those who prefer restaurants with bars and nightlife rarely review breakfast restaurants and dislike fast food.
+
+All of this analysis assumes that the distance metric used in the K-Means algorithm is accurately finding representative clusters. The merit of clustering will be able to be tested later when we predict a user's final rating. If this model has merit, then we should see an improvement over analogous models with no clustering.
+
+\subsubsection{Nightlife}
+Due to the strong division of users by nightlife preference in restaurants, we are encouraged to apply our same strategy to predicting a user's rating for businesses in the nightlife category. 
+
+As we learned previously, results are much improved when the category review frequency attributes are chosen to be fractional values and the features are scaled properly. We see the same results for the nightlife prediction problem. For brevity, we skip to results for four clusters using the scaled and fractional features. The results are shown in Figure~\ref{fig:nl_kmeans_4} with cluster averages plotted in Figure~\ref{fig:nl_kmeans_4_avg}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{NL_kmeans4clusters_all.png}
+	\caption{Plot of user features against the feature number for four nightlife clusters. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+	\label{fig:nl_kmeans_4}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{NL_kmeans4clusters.png}
+	\caption{Cluster-averaged features plotted for every feature in four nightlife clusters. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+	\label{fig:nl_kmeans_4_avg}
+\end{figure}
+
+These clusters show users that have a high number of dance club reviews do not often review bars, sports bars, or pubs. This same group often reviews lounges as well and tends to rate sports bars, karaoke, and music venues highly. Another cluster tends to review wine bars but not dance clubs. This group rates bars and lounges highly but rates jazz clubs poorly. Again, all of this analysis assumes that the clustering algorithm is functioning properly and finding real clusters in the data. We now will see how the clustering scheme affects the prediction of user ratings.
 
 \subsubsection{Overall Trends}
 For the overal system, we first chose a method of clustering (k-means, k-neighbors, or gaussian mixture), and a method for inference (MLE, lasso, ridge, bayesian ridge, or random forests). We then tested the system end-to-end with the partitions of the user and business data. We let the MLE inference method be the base line with which we compared all other regression methods, because it represents the most simple estimation. We report error in terms of the average absolute value difference between the guess and the actual rating. This error number must range from $[0, 5]$, where a lower number indicates we are making better guesses. Figure~\ref{fig:MLE} visually shows the result of varying the hyperparameter for K-Means, K-Neighbors, and Gaussian Mixtures.
