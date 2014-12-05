@@ -275,7 +275,7 @@ If we use this raw data in a K-Means clustering algorithm, we observe very poor 
  \begin{figure}[h!]
  	\centering
  	\includegraphics[width=0.9\textwidth]{old_features.png}
- 	\caption{Plot of user features against the feature number. Frequency features represent the total number of reviews a user gives a category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+ 	\caption{Plot of user features against the feature number for two clusters. Frequency features represent the total number of reviews a user gives a category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
  	\label{fig:bad_clustering}
  \end{figure} 
  
@@ -286,10 +286,18 @@ If we use this raw data in a K-Means clustering algorithm, we observe very poor 
 \begin{figure}[h!]
 	\centering
 	\includegraphics[width=0.9\textwidth]{kmeans2clusters_all.png}
-	\caption{Plot of user features against the feature number. Frequency features represent the fraction of a user's reviews that correspond to each category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+	\caption{Plot of user features against the feature number for two clusters. Frequency features represent the fraction of a user's reviews that correspond to each category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
 	\label{fig:better_clustering}
 \end{figure} 
 
+When we extend to four clusters we see even more separation. This is shown in
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{kmeans2clusters_all.png}
+	\caption{Plot of user features against the feature number for two clusters. Frequency features represent the fraction of a user's reviews that correspond to each category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+	\label{}
+\end{figure} 
 
 % \subsection{Regression}
 % \subsubsection{Maximum Liklihood Estimate}
