@@ -51,7 +51,7 @@ The overall goal is to accept, as inputs, a user and business, and to output a f
 \item Separetely train each category to learn the average business rating for only the users in that group.
 \end{enumerate}
 
-For example, assume a particular group we learn in step 1 contains users who enjoy restaurants with a hipster ambiance, which means restaurants matching this profile will achieve higher ratings by them. In step 2, the expected output is the average rating given only by its members. This means that another group may be trained to rate the same business differently, which shows its users have different broad preferences. Figure \ref{fig:system} shows an overall schematic of the system.\\
+For example, assume a particular group we learn in step 1 contains users who prefer Mexican restaurants. In step 2, the expected output is the average rating given only by its members. This means that another group may be trained to rate the same business differently, which shows its users have different broad preferences. Figure \ref{fig:system} shows an overall schematic of the system.\\
 
 \begin{figure}[h!]
     \centering
@@ -71,15 +71,53 @@ A key to success in any machine learning problem is the selection of relevant fe
 \subsection{User Data}
 The Yelp dataset is comprised of three relevant files: a user review file, a user attribute file, and a business attribute file. A straightforward approach would be to classify a user based purely off the data presented in the user attribute file. This file contains information about the user along with a user ID. However, the information provided is only basic with attributes such as the total number of reviews a user has written, the average of the user's ratings, and less relevant attributes such the user's full name.
 
-Therefore, we use a different approach to form user features. We still take a couple features from the user attribute file, namely the user's average rating and the total number of reviews, but most features are formed by cross referencing the user's ID with the user reviews file. With our approach, we find the reviews associated with the user's ID and store the rating and business ID associated with each review. Then from the business ID we can cross reference the business file to determine what type of restaurant with which it is associated.  Yelp lists categories associated with each business. For instance, every restaurant will have the string 'restaurant' in its categories but might also have the string 'Mexican restaurant.'
+Therefore, we use a different approach to form user features. We still take a couple features from the user attribute file, namely the user's average rating and the total number of reviews, but most features are formed by cross referencing the user's ID with the user reviews file. With our approach, we find the reviews associated with the user's ID and store the rating and business ID associated with each review. Then from the business ID we can cross reference the business file to determine the type of restaurant.  Yelp lists categories associated with each business. For instance, every restaurant will have the string `restaurant' in its categories but might also have the string `Mexican restaurant.'
 
-This allows us to form features that describe how a user prefers different types of restaurants. In particular, there is a feature associated with the user's average rating for restaurants in each category along with another feature for the number of reviews a user has given for each category. To compensate for users that preferentially give good or bad reviews, the user's average rating is subtracted from the category-averaged rating. Therefore these features provide information on the user's preferences in restaurants, such as liking Italian food but disliking Mexican food.
+This allows us to form features that describe how a user prefers different types of restaurants. In particular, there is a feature associated with the user's average rating for restaurants in each category along with another feature for the frequency a user has reviewed each category. To compensate for users that preferentially give good or bad reviews, the user's average rating is subtracted from the category-averaged rating. Therefore these features provide information on the user's preferences in restaurants, such as liking Italian food but disliking Mexican food.
 
 One major challenge with this approach is missing data. For the vast majority of users, there will be categories in which the user has given no reviews. For most machine learning algorithms, the data needs to be complete. To remedy this, we choose to fill missing data using data imputation. We assign the user's average review to categories in which the user has no reviews. Since we subtract by the user's average review in category ratings, this corresponds to inserting zeros for these missing features. 
 
-Typically, data imputation is not the correct method to solve the missing data problem for large data sets \cite{em_vs_im}. The preferred method is expectation-maximization (EM) in which the objective function is directly maximized \cite{em}. However, EM presents a few problems for our scheme. Fist, there is a large amount of missing data. For almost all users there is more than one missing feature value. In addition, many clustering algorithms do not work well with the probabilistic approach of EM. In EM, no single value is assigned to missing data points. Instead, a probability is assigned. In an iterative process estimates for this probability are updated along with density estimation parameters. Some clustering algorithms such as k-means do not perform density estimation but rather partition the feature space \cite{kmeans}. This is problematic since EM requires evaluation of the likelihood of the data.
+Typically, data imputation is not the appropriate method to solve the missing data problem for large data sets \cite{em_vs_im}. The preferred method is expectation-maximization (EM) in which the objective function is directly maximized \cite{em}. However, EM presents a few problems for our scheme. Fist, there is a large amount of missing data. For almost all users there is more than one missing feature value. In addition, many clustering algorithms do not work well with the probabilistic approach of EM. In EM, no single value is assigned to missing data points. Instead, a probability is assigned. In an iterative process estimates for this probability are updated along with density estimation parameters. Some clustering algorithms such as k-means do not perform density estimation but rather partition the feature space \cite{kmeans}. This is problematic since EM requires evaluation of the likelihood of the data.
 
-Overall, the user feature vector contains 33 features, 28 of which are associated with the average rating and number of reviews for 14 categories of restaurants. The remaining 5 features are statistical features associated with the user, such as variance of review ratings and average review rating.
+Overall, the user feature vector contains 33 features, 28 of which are associated with the average rating and number of reviews for 14 categories of restaurants. The remaining 5 features are statistical features associated with the user, such as variance of review ratings and average review rating. All of the features are described in Table~\ref{tab:user_features1} and Table~\ref{tab:user_features2}.
+
+\begin{table}[h!]
+	\caption{User Feature Descriptions (Restaurant Categories)}
+	\centering
+	\begin{tabular}{c|c|c}
+		Restaurant Category & \multicolumn{2}{c}{Feature Numbers} \\ \hline
+		& Review Frequency & Scaled Review Average \\
+		Mexican & 0 & 14 \\
+		American (Traditional) & 1 & 15\\
+		Fast Food & 2 & 16\\
+		Pizza & 3 & 17\\
+		Sandwiches & 4 & 18\\
+		Nightlife & 5 & 19\\
+		Bars & 6 & 20\\
+		Food & 7 & 21\\
+		American (New) & 8 & 22\\
+		Italian & 9 & 23\\
+		Chinese & 10 & 24\\
+		Burgers & 11 & 25\\
+		Breakfast/Brunch & 12 & 26\\
+		Japanese & 13 & 27\\
+	\end{tabular}
+	\label{tab:user_features1}
+\end{table}
+
+\begin{table}[h!]
+	\caption{User Feature Descriptions (Restaurant Statistics)}
+	\centering
+	\begin{tabular}{c|c}
+		Feature & Feature Number \\ \hline
+		Number of present user reviews & 28 \\
+		Variance of present user ratings & 29 \\
+		Average of present user ratings & 30 \\
+		Total number of user reviews & 31 \\
+		Average of total user ratings & 32 \\
+	\end{tabular}
+	\label{tab:user_features2}
+\end{table}
 
 \subsection{Business Data}
 
@@ -87,7 +125,7 @@ Once users are partitioned into clusters, a model must be developed for each clu
 
 For business features, missing data is treated differently than it was for user features. This is because missing business data directly corresponds to missing data in the Yelp dataset and might actually be representative of the business. For instance if the business is new or not very popular, many attributes corresponding to the business may be missing. For established businesses, we expect that more attributes will be present. 
 
-Therefore, missing binary features are treated as categorical features. More specifically, we split each binary feature into three features. Only one feature is 1 and the rest is 0 for all features. If there is a present and positive binary feature, the first feature is marked with a 1. If there is a present and negative binary feature, the second feature is marked with a 1. In the case of missing data, the last feature is marked with a 1. 
+Therefore, missing binary features are treated as categorical features. More specifically, we split each binary feature into three features. Only one feature is 1 and the other two are 0. If there is a present and positive binary feature, the first feature is marked with a 1. If there is a present and negative binary feature, the second feature is marked with a 1. In the case of missing data, the last feature in the set is marked with a 1. 
 
 A similar approach is taken with actual categorical features. For instance, the attire attribute may be listed as casual, dressy, formal, or the data might be missing. This feature is therefore split into four features with an approach similar to the binary features wherein only one feature is marked with a 1.
 
@@ -221,6 +259,28 @@ The problem is that step 1 cannot be supervised because it is a hidden variable,
 The strategy works so that we recursively train-validate-test the business data for every model within a single iteration of training the user data. When we perform validation within the model, represented by the dashed grey area in Figure \ref{fig:testing}, we are testing predictions on businesses that the model has not seen before, but for the same users. In contrast, when we perform end-to-end testing, we are making predictions on users and businesses that the overall system has not seen. We chose a scheme where we used 50\% of the user data and business data to train, 25\% of the data to validate, and 25\% to test.
 
 \subsection{Results}
+
+\subsection{FIXME: Clustering}
+ 
+ The first step in our scheme is to cluster users based on the user feature vectors $U$. Included in this data is information about how often users have reviewed several categories of restaurants along with their rating for each category relative to their average rating. Additional features include the total number of reviews. 
+ 
+ If we use this raw data in a K-Means clustering algorithm, we observe very poor results. This is due to some features having much greater values and deviation, therefore receiving more weight. In particular, the total number of businesses a user has reviewed can have a large value whereas the average rating of a category relative to the user average is real valued in the range (0,4). This leads to average category ratings having little impact on the clustering. To avoid this, each feature is scaled relative to the mean and standard deviation of that feature in the dataset \cite{kmeans}. For every feature $\phi^d_i$ corresponding to the $d^{\text{th}}$ feature for user $i$, the scaled feature value $\tilde{\phi^d_i}$ is calculated as
+ \begin{equation}
+\tilde{\phi^d_i} = \frac{\phi^d_i - \mu^d}{\sigma^d}
+ \end{equation}
+ where $\mu^d$ is the average value for feature $\phi^d$ in the dataset with standard deviation $\sigma^d$. This limits the effect a single feature can have on influencing the cluster boundaries.
+ 
+ After applying this correction we observe clusters indicated in Figure \ref{fig:bad_clustering}. This shows that many features are influencing the choice of cluster boundaries, not just one. However, if we delve deeper into the results, we see that the dominant features are the frequency of which users attend restaurants of each category. In this first clustering attempt, the frequency features before scaling are simply the number of reviews a user has written for restaurants in each category. Notice that the clusters seem to be grouped by the number of users have written. This is not ideal since we would like to discriminate users based on preference, not the total number of reviews. The total number of reviews is a relevant feature and is captured in our feature set by the total number of reviews feature but we would prefer that it not dominate the cluster boundaries.
+ 
+ To solve this issue, we re-engineer the category review frequency features. Instead of the features simply being the user's total number of reviews for each category, these features are normalized by the number of user reviews. Therefore, the bias of choosing clusters based on the number of reviews is reduced. The resulting clusters are shown in Figure \ref{fig:better_clustering}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{kmeans3clusters_all.png}
+	\caption{.}
+	\label{fig:better_clustering}
+\end{figure} 
+
 
 % \subsection{Regression}
 % \subsubsection{Maximum Liklihood Estimate}
