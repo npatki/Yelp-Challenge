@@ -110,6 +110,15 @@ def gaussianMixture(num_clusters, learner):
 
     return fn
 
+def user_history(a, b):
+    def fn(user_vector, user_id):
+        ratings, NA = compute_ratings(set([user_id]))
+        _, actual, _ = get_biz_vectors('all', ratings)
+        output = sum(ratings.values())/float(len(ratings))
+        output = np.array([output])
+        return output, actual
+    return fn
+
 def bayesianGaussianMixture(num_clusters, learner):
  
     """Fits a gaussian mixture model for users, taking the maximum

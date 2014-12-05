@@ -21,7 +21,7 @@
 
 \author{6.867 Homework 2 and 3}
 \begin{document}
-\noindent\centerline{\LARGE{Two-Factor Recommendation Models}}
+\noindent\centerline{\LARGE{Two-Variable Recommendation Models}}
 \noindent\centerline{}
 \noindent\centerline{}
 \noindent\centerline{Fall 2014}
@@ -34,7 +34,7 @@ In 2014, Yelp published an academic dataset containing over 42,000 businesses th
 \subsection{Motivation}
 Yelp does not currently give personal recommendations to its users, but the data it collects about reviews and users make it possible to learn a user's preferences. Typical approaches fall in two categories. Collaborative filtering analyzes similarities between different users, and the items they rate highly. Content-based filtering focuses on a single user's personal history to determine individual likes and dislikes.
 
-For Yelp's data set, we find that a collaborative filter would not take into account an individual's own preferences for cuisines and restaurant sub-categories. However, we cannot use pure content-based filtering because a single user may not have reviewed a significant number of restaurants, making the data points sparse. This motivates us to use a hybrid approach in estimation, where we combine a user's history with a cluster-based approach meant to account for the sparsity of data points. We introduce a hidden factor that models an overall group of similar users, and use this factor to separately learn preferences for each group.
+For Yelp's data set, we find that a collaborative filter would not take into account an individual's own preferences for cuisines and restaurant sub-categories. However, we cannot use pure content-based filtering because a single user may not have reviewed a significant number of restaurants, making the data points sparse. This motivates us to use a hybrid approach in estimation, where we combine a user's history with a cluster-based approach meant to account for the sparsity of data points. We introduce a hidden variable that models an overall group of similar users, and use this variable to separately learn preferences for each group.
 
 An additional challenge and motivation for the problem is analyzing the given data to determine relevant features. Yelp offers a vast array of data ranging from the ambiance in each restaurant, to the number of times a user was voted funny by their peers. Furthermore, the 5 metropolitan areas are diverse in their offerings of food, and users may show preferences towards particular types of restaurants. We spend a significant time engineering feature vectors to reflect the variety of information. After the learning process, this enables us to comment on significant features to reveal trends in user preferences. 
 
@@ -42,7 +42,7 @@ An additional challenge and motivation for the problem is analyzing the given da
 The overall goal is to accept, as inputs, a user and business, and to output a floating point value in $[1, 5]$ that predicts what the user will rate the business. We do this using two steps.
 
 \begin{enumerate}
-\item Categorize the users into groups who have groughly similar interests. This is the hidden factor.
+\item Categorize the users into groups who have groughly similar interests. This is the hidden variable.
 \item Separetely train each category to learn the average business rating for only the users in that group.
 \end{enumerate}
 
@@ -50,14 +50,14 @@ For example, assume a particular group we learn in step 1 contains users who enj
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.9\textwidth, height=5.75cm]{architecture}
-    \caption{The architecture for the overall system. Inputs are colored blue while the output is shown in green. Dotted lines represents inputs during training, and solid lines represent the flow of information at testing time. The hidden factor is used to select a model, or a mixture of models, that the business data is tested on. The output is the rating.}
+    \includegraphics[width=0.9\textwidth, height=6cm]{system}
+    \caption{The architecture for the overall system. Inputs are colored blue while the output is shown in green. Dotted lines represents inputs during training, and solid lines represent the flow of information at testing time. The hidden variable is used to select a model, or a mixture of models, that the business data is tested on. The output is the rating.}
     \label{fig:system}
 \end{figure} 
 
-Modeling the hidden factor in step 1 is an unsupervised learning problem, because we are constructing groups for which we have no prior labels. However, after learning the hidden factor, the step 2 is fully supervised because we are presented with a full list of ratings for each business. Considering the full system, we see that we can perform an end-to-end test given a user, a business, and an expected rating. This allows us to indirectly supervise the hidden factor to determine the appropriate hyperparameters for step 1. The overall complexity of our system grows, and we perform a train-validate-test strategy recursively for step 2 within the context of the overall system.
+Modeling the hidden variable in step 1 is an unsupervised learning problem, because we are constructing groups for which we have no prior labels. However, after learning the hidden variable, the step 2 is fully supervised because we are presented with a full list of ratings for each business. Considering the full system, we see that we can perform an end-to-end test given a user, a business, and an expected rating. This allows us to indirectly supervise the hidden variable to determine the appropriate hyperparameters for step 1. The overall complexity of our system grows, and we perform a train-validate-test strategy recursively for step 2 within the context of the overall system.
 
-In the next sections, we discuss constructing the feature vectors that create the user and business data shown in Figure \ref{fig:system}. We describe multiple approaches to implement both factors, and describe our train-validate-testing strategy. Finally, we compare the different methodologies in terms of accuracy and computational time.
+In the next sections, we discuss constructing the feature vectors that create the user and business data shown in Figure \ref{fig:system}. We describe multiple approaches to implement both variables, and describe our train-validate-testing strategy. Finally, we compare the different methodologies in terms of accuracy and computational time.
 
 \section{Features}
 
@@ -66,7 +66,7 @@ A key to success in any machine learning problem is the selection of relevant fe
 \subsection{User Data}
 The Yelp dataset is comprised of three relevant files: a user review file, a user attribute file, and a business attribute file. A straightforward approach would be to classify a user based purely off the data presented in the user attribute file. This file contains information about the user along with a user ID. However, the information provided is only basic with attributes such as the total number of reviews a user has written, the average of the user's ratings, and less relevant attributes such the user's full name.
 
-Therefore, we use a different approach to form user features. We still take a couple features from the user attribute file, namely the user's average rating and the total number of reviews, but most features are formed by cross referencing the user's ID with the user reviews file. With our approach, we find the reviews associated with the user's ID and store the rating and business ID associated with each review. Then from the business ID we can cross reference the business file to determine what type fo restaurant with which it is associated.  Yelp lists categories associated with each business. For instance, every restaurant will have the string 'restaurant' in its categories but might also have the string 'Mexican restaurant.'
+Therefore, we use a different approach to form user features. We still take a couple features from the user attribute file, namely the user's average rating and the total number of reviews, but most features are formed by cross referencing the user's ID with the user reviews file. With our approach, we find the reviews associated with the user's ID and store the rating and business ID associated with each review. Then from the business ID we can cross reference the business file to determine what type of restaurant with which it is associated.  Yelp lists categories associated with each business. For instance, every restaurant will have the string 'restaurant' in its categories but might also have the string 'Mexican restaurant.'
 
 This allows us to form features that describe how a user prefers different types of restaurants. In particular, there is a feature associated with the user's average rating for restaurants in each category along with another feature for the number of reviews a user has given for each category. To compensate for users that preferentially give good or bad reviews, the user's average rating is subtracted from the category-averaged rating. Therefore these features provide information on the user's preferences in restaurants, such as liking Italian food but disliking Mexican food.
 
@@ -89,10 +89,25 @@ A similar approach is taken with actual categorical features. For instance, the 
 Additional features are engineered from the data available. The Yelp dataset is based off data from 5 metro areas: Phoenix, Las Vegas, Madison, Waterloo, and Edinburgh. The business attributes lists the city in which the restaurant is located, but not the metro area. This is problematic since intuitively the metro area should have an impact on the rating since the five cities are very different in nature. However, the latitude and longitude of the locations is provided. Using these coordinates along with the coordinates of the centers of the major cities, as provided by Wikipedia, the metro area can easily be determined by finding the closest center. Therefore a categorical feature can be developed for the metro area much like the attire example presented previously. Additionally, distance to the center of the city might be important so a feature is added that gives the distance to the center of the city based off the coordinates.
 
 \section{Methodology}
-\subsection{Hidden Factor}
-\subsubsection{K-Means Clustering}
-\subsubsection{K-Neighbors}
-\subsubsection{Mixture of Gaussians}
+After constructing the feature vectors, our data now consists of a set $B$ of business vectors, and a set $U$ of user vectors. Assume that every $b \in B$ is the business feature vector described in the previous section. We also have access a set of ratings, $R$, where a single rating is determined by a user and a business. Let $r_{ub} \in R$ denote the rating given by user $u$ to business $b$. We define a function that takes in a set of users and a business, and outputs the average rating given to the business only by the users in the set. Mathematically, this is:
+
+\[f(U_s, b) = \frac{\sum\limits_{u \in U_i} r_{ub}}{|U_i|}\]
+
+Where $U_i \subseteq U_s$ is the set of users who have given a rating to business $b$. If $U_i = \emptyset$, then this function is not defined. We make user of this function in our overall system after we discover the hidden variable.
+
+We now present three separate ways we formulated the problem, and different systems we built to explore each.
+
+\subsection{KMeans Clustering}
+Perhaps the most naive way to calculate the hidden variable is to perform k-means clustering analysis using the set $U$, and to use the cluster as the hidden variable. If we let $k$ be the number of clusters, then the k-means clustering will return sets of users $U_0, U_1, \ldots, U_k$ such that a user only belongs to one of the sets ($U_i \cap U_j = \emptyset$ for any $U_i \neq U_j$). Each of the clusters can then be trained independently using any method of inference.
+
+Given the output of KMeans clustering, we define the inference problem inputs and outputs in terms of the business vectors. As inputs, we have the set of businesses that some user in the cluster has rated. If the cluster is $U_i$, we denote the relevant set of businesses as $B_i$, where for every $b \in B_i$, $r_{ub}$ exists for at least one $u \in U_i$. Then the input for the inference is $B_i$ and the output is the set $\{f(U_i, b)\}$, $\forall b \in B_i$.
+
+It is important to note that for two different clusters of users, the businesses the users have rated are not necessarily identical. That is, for $U_i, U_j$ where $U_i \neq U_j$, it is not necessarily the case that $B_i = B_j$. Furthermore, if there does exist a $b \in B_i$ and $b \in B_j$, then it is not necessarily the case that $f(U_i, b) = f(U_j, b)$. This means that the same business vectors can be trained with different expected output based on the clusters. It represents our belief that the users in different clusters have different preferences, so they may rate the same business differently. 
+
+\subsection{KNeighbors}
+
+\subsection{Mixture of Gaussians}
+
 \subsection{Second Factor}
 \subsubsection{MLE}
 \subsubsection{Lasso}
