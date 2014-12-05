@@ -166,7 +166,7 @@ Then, we can predict the rating given a user $u$ and a business $b$ by first fin
 Note that the complexity of this grows with the number of clusters we choose. With k clusters, finding the cluster in line 2 and the appropriate cluster's trained inference method in line 3 take $O(k)$ time.
 
 \subsection{K-Neighbors}
-A different approach determines the hidden clusters dynamically at run time. In this approach, we do not hard-code any clusters but decide them based on the input variables when testing. We perform a nearest-neighbors analysis, and let that particular set of users be the cluster used to perform the inference. Let $k$ be an integer that represents the number of neighbors we will use. Then at testing time, we find the $k$ nearest neighors and peform an inference on these neighbors dynamically.\\
+A different approach determines the hidden clusters dynamically at run time. In this approach, we do not hard-code any clusters but decide them based on the input variables when testing. We perform a nearest-neighbors analysis, and let that particular set of users be the cluster used to perform the inference. Let $k$ be an integer that represents the number of neighbors we will use. Then at testing time, we find the $k$ nearest neighbors and perform an inference on these neighbors dynamically.\\
 
 \begin{algorithmic}[1]
 	\Function{predict}{$u, b$}
@@ -187,9 +187,9 @@ Here, $U_s$ is the set of k nearest neighbors to $u$. In step 8, we train to lea
 Note that the total number of unique sets $U_s$ of size $k$ is $|U| \choose k$. In theory, we could complete an inference algorithm on each of these sets during testing time, but we found this to be infeasible with a growing size of $U$ and $k$. Furthermore, dynamically performing the inference allows the model to be more flexible in that we can add more users to $U$ at any point, or change the parameter $k$. The downside is that each prediction takes a longer time to run because there is a complete inference problem that must be solved for every queried $u, b$ pair. 
 
 \subsection{Mixture of Gaussians}
-Our third model treats clustering using a probabilistic approach. Assuming that the users in $U$ are a mixture of several gaussian distributions allows us to treat a single user, $u$, as probabilistically belonging to different clusters. If we choose $k$ as the number of mixtures (our hyperparameter), this means that asking to cluster a user $u$ will return a list of size $k$, where each element $i$ is in $[0, 1]$. This respresents the probability of user $u$ belonging to mixture $i$.
+Our third model treats clustering using a probabilistic approach. Assuming that the users in $U$ are a mixture of several Gaussian distributions allows us to treat a single user, $u$, as probabilistically belonging to different clusters. If we choose $k$ as the number of mixtures (our hyperparameter), this means that asking to cluster a user $u$ will return a list of size $k$, where each element $i$ is in $[0, 1]$. This represents the probability of user $u$ belonging to mixture $i$.
 
-During training time we perfom $k$ inference algorithms, one for each mixture, similar to the k-means method. However, instead of completely partitioning the users into clusters, we use all users and weight them based on how likely they are to belong there. Let $p_i(u)$ be the probability that user $u$ belongs to cluster $i$. Our calculation of the rating then takes a different form.
+During training time we perform $k$ inference algorithms, one for each mixture, similar to the k-means method. However, instead of completely partitioning the users into clusters, we use all users and weight them based on how likely they are to belong there. Let $p_i(u)$ be the probability that user $u$ belongs to cluster $i$. Our calculation of the rating then takes a different form.
 
 \begin{equation}
 \label{weighted}
@@ -198,11 +198,11 @@ g(i, b) = \frac{\sum\limits_{u \in U} r_{ub}p_i(u)}{\sum\limits_{u \in U} p_i(u)
 
 Here $i$ is the index assigned to a particular mixture. For each mixture, we consider all the users in $U$, but the ratings of these users are weighted according to how likely it is the user belongs to $i$. We can think of this as a more general form of Equation \eqref{basic}, which treats the weights as a continuous probability in $[0, 1]$ instead of a discrete value $\{0, 1\}$.
 
-During testing time, we are given a user $u$ and can similarly calculate the probability that the user belongs to the different mixtures. We can use this to either choose the maximum liklihood estimate, or weight the different clusters to convey our uncertainty.
+During testing time, we are given a user $u$ and can similarly calculate the probability that the user belongs to the different mixtures. We can use this to either choose the maximum likelihood estimate, or weight the different clusters to convey our uncertainty.
 
 
-\subsubsection{Maximum Liklihood Estimate}
-In the case of the maximum liklihood estimate, this strategy works similarly to k-means clustering. Though the underlying gaussian mixture model is different, we perform the same analysis at testing time. Given a user $u$, we find the cluster, $i$, that has the maximum probability $p_i(u)$. We can then use a trained inference model for the $i^{th}$ cluster with a business, $b$, to compute our prediction of the rating.
+\subsubsection{Maximum Likelihood Estimate}
+In the case of the maximum likelihood estimate, this strategy works similarly to k-means clustering. Though the underlying Gaussian mixture model is different, we perform the same analysis at testing time. Given a user $u$, we find the cluster, $i$, that has the maximum probability $p_i(u)$. We can then use a trained inference model for the $i^{th}$ cluster with a business, $b$, to compute our prediction of the rating.
 
 \subsubsection{Probabilistic Weights}
 In this case, we must perform the trained inference for each mixture and output the weighted result of all mixtures, according to the probabilities of the user belong to that mixture.\\
@@ -228,7 +228,7 @@ In each of the above cases, we have mentioned that after discovering an individu
 We consider 5 different algorithms when performing the inference.
 
 \begin{itemize}
-\item MLE: The maximum liklihood estimate just returns the average rating from all the given ratings. This is used as a benchmark for testing how the other algorithms compare.
+\item MLE: The maximum likelihood estimate just returns the average rating from all the given ratings. This is used as a benchmark for testing how the other algorithms compare.
 \item Ridge: This is the ridge regression, as implemented in class.
 \item Lasso: This is the lasso regression, as implemented in class.
 \item Bayesian Ridge: This is a ridge-type regression that assumes all the input data is Bayesian. We were motivated to try this because we expected a user's ratings patterns to follow roughly a bell-shaped distribution.
@@ -258,10 +258,10 @@ The problem is that step 1 cannot be supervised because it is a hidden variable,
     \label{fig:testing}
 \end{figure} 
 
-The strategy works so that we recursively train-validate-test the business data for every model within a single iteration of training the user data. When we perform validation within the model, represented by the dashed grey area in Figure \ref{fig:testing}, we are testing predictions on businesses that the model has not seen before, but for the same users. In contrast, when we perform end-to-end testing, we are making predictions on users and businesses that the overall system has not seen. We chose a scheme where we used 50\% of the user data and business data to train, 25\% of the data to validate, and 25\% to test.
+The strategy works so that we recursively train-validate-test the business data for every model within a single iteration of training the user data. When we perform validation within the model, represented by the dashed gray area in Figure \ref{fig:testing}, we are testing predictions on businesses that the model has not seen before, but for the same users. In contrast, when we perform end-to-end testing, we are making predictions on users and businesses that the overall system has not seen. We chose a scheme where we used 50\% of the user data and business data to train, 25\% of the data to validate, and 25\% to test.
 
 \subsection{Results}
-We now present the results we achieved for each of the variables, as well as the overall end-to-end testing. While the hidden variable method was not supervised, we still present significant trends and comment on the perceived effiency. In the overall system, we present validation accuracies for different hyperparameters.
+We now present the results we achieved for each of the variables, as well as the overall end-to-end testing. While the hidden variable method was not supervised, we still present significant trends and comment on the perceived efficiency. In the overall system, we present validation accuracies for different hyperparameters.
 
 \subsubsection{Hidden Variable}
 The first step in our scheme is to cluster users based on the user feature vectors $U$. Included in this data is information about how often users have reviewed several categories of restaurants along with their rating for each category relative to their average rating. Additional features include the total number of reviews. 
@@ -290,13 +290,13 @@ If we use this raw data in a K-Means clustering algorithm, we observe very poor 
 	\label{fig:better_clustering}
 \end{figure} 
 
-When we extend to four clusters we see even more separation. This is shown in
+When we extend to four clusters we see even more separation. This is shown in Figure~\ref{fig:kmeans_4}
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.9\textwidth]{kmeans2clusters_all.png}
-	\caption{Plot of user features against the feature number for two clusters. Frequency features represent the fraction of a user's reviews that correspond to each category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
-	\label{}
+	\includegraphics[width=0.9\textwidth]{kmeans4clusters_all.png}
+	\caption{Plot of user features against the feature number for four clusters. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+	\label{fig:kmeans_4}
 \end{figure} 
 
 % \subsection{Regression}
