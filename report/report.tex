@@ -71,7 +71,7 @@ A key to success in any machine learning problem is the selection of relevant fe
 \subsection{User Data}
 The Yelp dataset is comprised of three relevant files: a user review file, a user attribute file, and a business attribute file. A straightforward approach would be to classify a user based purely off the data presented in the user attribute file. This file contains information about the user along with a user ID. However, the information provided is only basic with attributes such as the total number of reviews a user has written, the average of the user's ratings, and less relevant attributes such the user's full name.
 
-Therefore, we use a different approach to form user features. We still take a couple features from the user attribute file, namely the user's average rating and the total number of reviews, but most features are formed by cross referencing the user's ID with the user reviews file. With our approach, we find the reviews associated with the user's ID and store the rating and business ID associated with each review. Then from the business ID we can cross reference the business file to determine what type of restaurant with which it is associated.  Yelp lists categories associated with each business. For instance, every restaurant will have the string 'restaurant' in its categories but might also have the string 'Mexican restaurant.'
+Therefore, we use a different approach to form user features. We still take a couple features from the user attribute file, namely the user's average rating and the total number of reviews, but most features are formed by cross referencing the user's ID with the user reviews file. With our approach, we find the reviews associated with the user's ID and store the rating and business ID associated with each review. Then from the business ID we can cross reference the business file to determine what type of restaurant with which it is associated.  Yelp lists categories associated with each business. For instance, every restaurant will have the string `restaurant' in its categories but might also have the string `Mexican restaurant.'
 
 This allows us to form features that describe how a user prefers different types of restaurants. In particular, there is a feature associated with the user's average rating for restaurants in each category along with another feature for the number of reviews a user has given for each category. To compensate for users that preferentially give good or bad reviews, the user's average rating is subtracted from the category-averaged rating. Therefore these features provide information on the user's preferences in restaurants, such as liking Italian food but disliking Mexican food.
 
@@ -209,7 +209,7 @@ Our overall setup implemented a recursive train-validation-test strategy. Note t
 \item Using the cluster and the business as inputs, predict the overall rating.
 \end{enumerate}
 
-Step 2 can be directly supervised because we are given the actual average rating for a business. Thus, we can tune hyperparameters to the inference problem using the same train-validation-test strategy used in class by splitting the business data into 3 categories. We train the model using the business training data, re-run the model using the validation data, and use the results of the validation data to tune any hyperparameters.
+Step 2 can be directly supervised because we are given the actual average rating for a business. Thus, we can tune hyperparameters to the inference problem using the same train-validation-test strategy used in class by splitting the business data into 3 categories.
 
 The problem is that step 1 cannot be supervised because it is a hidden variable, even though we need to tune its hyperparameters (the number of clusters, number of nearest neighbors, or number of mixtures). To solve this problem, we note that we can perform end-to-end testing on the entire system. Given a user and a business, we know what the overall rating should be. This means that we can split the user data into 3 categories as well, training the entire system, and validating the system end-to-end to determine the hyperpameters of the hidden variable. Figure \ref{fig:testing} shows a visual schematic of our testing system.
 
@@ -222,7 +222,7 @@ The problem is that step 1 cannot be supervised because it is a hidden variable,
 
 The strategy works so that we recursively train-validate-test the business data for every model within a single iteration of training the user data. When we perform validation within the model, represented by the dashed grey area in Figure \ref{fig:testing}, we are testing predictions on businesses that the model has not seen before, but for the same users. In contrast, when we perform end-to-end testing, we are making predictions on users and businesses that the overall system has not seen. We chose a scheme where we used 50\% of the user data and business data to train, 25\% of the data to validate, and 25\% to test.
 
-\subsection{Results}
+\subsection{Clustering}
 
 % \subsection{Regression}
 % \subsubsection{Maximum Liklihood Estimate}
