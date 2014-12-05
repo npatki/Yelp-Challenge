@@ -156,9 +156,9 @@ Then, we can predict the rating given a user $u$ and a business $b$ by first fin
 
 \begin{algorithmic}[1]
 \Function{predict}{$u, b$}
-\State $i \gets cluster(u)$ \Comment{A cluster number.}
-\State $method \gets inference(cluster=i)$ \Comment{The trained inference predictor for the cluster.}
-\State \Return $method(b)$
+\State $i \gets$ cluster$(u)$ \Comment{A cluster number.}
+\State method $\gets$ inference(cluster$=i)$ \Comment{The trained inference predictor for the cluster.}
+\State \Return method$(b)$
 \EndFunction
 \end{algorithmic}
 \medskip
