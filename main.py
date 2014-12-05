@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 5. Report the overall test error."""
 
 
-def users_validation(predictor, maximum=float('inf')):
+def users_validation(predictor, maximum=float('inf'), data='validate'):
     """Perform end-to-end analysis on the users validation set.
     
     :param predictor: a function that takes in a user vector and
@@ -37,7 +37,7 @@ def users_validation(predictor, maximum=float('inf')):
                     analysis is only done on this many users.
     :returns a float representing the average error made in rating
              per user"""
-    test_vectors, ID = get_user_vectors('validate')
+    test_vectors, ID = get_user_vectors(data)
     total_users = min(len(ID), maximum)
     total_error = 0.0
 
@@ -375,15 +375,11 @@ def bayesian_ridge(user_set):
     l.fit(X_train, Y_train)
     return l.predict
 
-def run(cluster_method, regression_method, hyperparam):
+def run(cluster_method, regression_method, hyperparam, d='validate'):
     predictor = cluster_method(hyperparam, regression_method)
 
-    #print 'doing prediction'
-    t0 = time.clock()
-    diff = users_validation(predictor)
+    diff = users_validation(predictor, d)
     print diff
-    t1 = time.clock()
-    #print 'time elapsed %f' % (t1 - t0)
 
     return diff
 

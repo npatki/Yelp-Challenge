@@ -274,7 +274,7 @@ If we use this raw data in a K-Means clustering algorithm, we observe very poor 
  
  \begin{figure}[h!]
  	\centering
- 	\includegraphics[width=0.9\textwidth]{old_features.png}
+ 	% \includegraphics[width=0.9\textwidth]{old_features.png}
  	\caption{Plot of user features against the feature number for two clusters. Frequency features represent the total number of reviews a user gives a category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
  	\label{fig:bad_clustering}
  \end{figure} 
@@ -285,7 +285,7 @@ If we use this raw data in a K-Means clustering algorithm, we observe very poor 
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.9\textwidth]{kmeans2clusters_all.png}
+	%\includegraphics[width=0.9\textwidth]{kmeans2clusters_all.png}
 	\caption{Plot of user features against the feature number for two clusters. Frequency features represent the fraction of a user's reviews that correspond to each category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
 	\label{fig:better_clustering}
 \end{figure} 
@@ -294,11 +294,73 @@ When we extend to four clusters we see even more separation. This is shown in
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.9\textwidth]{kmeans2clusters_all.png}
+	%\includegraphics[width=0.9\textwidth]{kmeans2clusters_all.png}
 	\caption{Plot of user features against the feature number for two clusters. Frequency features represent the fraction of a user's reviews that correspond to each category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
 	\label{}
 \end{figure} 
 
+\subsubsection{Overall Trends}
+For the overal system, we first chose a method of clustering (k-means, k-neighbors, or gaussian mixture), and a method for inference (MLE, lasso, ridge, bayesian ridge, or random forests). We then tested the system end-to-end with the partitions of the user and business data. We let the MLE inference method be the base line with which we compared all other regression methods, because it represents the most simple estimation. We report error in terms of the average absolute value difference between the guess and the actual rating. This error number must range from $[0, 5]$, where a lower number indicates we are making better guesses. Figure~\ref{fig:MLE} visually shows the result of varying the hyperparameter for K-Means, K-Neighbors, and Gaussian Mixtures.
+
+\begin{figure}[h!]
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{kmeans_mle.png}
+        \caption{K-Means/MLE}
+        \label{fig:kmMLE}
+    \end{subfigure}%
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{KN_mle.png}
+        \caption{K-Neighbors/MLE}
+        \label{fig:knMLE}
+    \end{subfigure}
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{GM_mle.png}
+        \caption{Gaussian Mixture/MLE}
+        \label{fig:gmMLE}
+    \end{subfigure}
+    \caption{Running the three types of clustering using the MLE estimate for each individual inference problem. The x-axis represents the hyperparameter of the model (number of clusters, or number per cluster), and the y-parameter shows the error per review.}
+    \label{fig:MLE}
+\end{figure}
+
+Note that K-Means selects the optimal number of clusters to be 8, while gaussian mixtures selects 14. The starting downwards trends in Figure~\ref{fig:kmMLE} and Figure~\ref{fig:gmMLE} shows that custering is having an effect on the error rate. If adding more clusters is resulting in a lower error, it is evidence that the clusters are finding categories of similar users, and that these cateories are successfully differentiating between different users' tastes.
+
+We find that the K-Neighbors approach is not working as well as the other two. An explanation of this is that the k nearest-neighbors to a single point may not necessarily be users with similar tastes, because we have many dimensions in the user feature vector. Another explanation is that the users belong distinctly in different categories, and forcing the method to use the k nearest-neighbors instead of the category is forcing a mixture of users who have varying tastes. This provides further evidence of the existance of latent user categories. Table~\ref{tab:baseline} shows the numerical results from running the test set with the hyperparameter that returned the lowest error for the validation set.
+
+\begin{table}[h!]
+    \begin{tabularx}{0.9\textwidth}{| X | r | r | r | }
+        \hline
+        Method & Hyperparameter & Validation Error & Test Error \\
+        \hline
+        K-Means & 8 & 0.917 & 0.912 \\
+        K-Neighbors & 1 & 0.899 & 0.954 \\
+        Gaussian Mixture & 14 & 0.951 & 0.943\\
+        \hline
+    \end{tabularx}
+    \caption{The lowest validation error achieved and the corresponding test error for K-Means, K-Neighbors, and Gaussian Mixtures for the hidden variable, and MLE for the inference model per cluster. This is our baseline to which we will compare the other methods.}
+    \label{tab:baseline}
+\end{table}
+
+Next, we compare the different types of inference methods to MLE. 
+
+\begin{figure}[h!]
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{kmeans_lasso.png}
+        \caption{K-Means/Lasso}
+        \label{fig:kmBEST}
+    \end{subfigure}%
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{KN_ridge.png}
+        \caption{K-Neighbors/Ridge}
+        \label{fig:knBEST}
+    \end{subfigure}
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{GM_lasso.png}
+        \caption{Gaussian Mixture/Lasso}
+        \label{fig:gmBEST}
+    \end{subfigure}
+    \caption{Running the three types of clustering on the best model of inference for each, as determined by the validation error.}
+    \label{fig:BEST}
+\end{figure}
 % \subsection{Regression}
 % \subsubsection{Maximum Liklihood Estimate}
 % \subsubsection{Bayesian Ridge}
