@@ -218,7 +218,7 @@ The problem is that step 1 cannot be supervised because it is a hidden variable,
     \label{fig:testing}
 \end{figure} 
 
-The strategy works so that we recursively train-validate-test the business data for every model within a single iteration of training the user data. For example, when we perform validation within the model, represented by the dashed grey area in Figure \ref{fig:testing}, we are testing predictions on businesses that the model has not seen before, but for the same users. In contrast, when we perform end-to-end testing, we are making predictions on users and businesses that the overall system has not seen. We chose a scheme where we used 50\% of the user data and business data to train, 25\% of the data to validate, and 25\% to test.
+The strategy works so that we recursively train-validate-test the business data for every model within a single iteration of training the user data. When we perform validation within the model, represented by the dashed grey area in Figure \ref{fig:testing}, we are testing predictions on businesses that the model has not seen before, but for the same users. In contrast, when we perform end-to-end testing, we are making predictions on users and businesses that the overall system has not seen. We chose a scheme where we used 50\% of the user data and business data to train, 25\% of the data to validate, and 25\% to test.
 
 \subsection{Results}
 
