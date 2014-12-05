@@ -261,12 +261,12 @@ The problem is that step 1 cannot be supervised because it is a hidden variable,
 The strategy works so that we recursively train-validate-test the business data for every model within a single iteration of training the user data. When we perform validation within the model, represented by the dashed grey area in Figure \ref{fig:testing}, we are testing predictions on businesses that the model has not seen before, but for the same users. In contrast, when we perform end-to-end testing, we are making predictions on users and businesses that the overall system has not seen. We chose a scheme where we used 50\% of the user data and business data to train, 25\% of the data to validate, and 25\% to test.
 
 \subsection{Results}
+We now present the results we achieved for each of the variables, as well as the overall end-to-end testing. While the hidden variable method was not supervised, we still present significant trends and comment on the perceived effiency. In the overall system, we present validation accuracies for different hyperparameters.
 
-\subsection{Clustering}
+\subsubsection{Hidden Variable}
+The first step in our scheme is to cluster users based on the user feature vectors $U$. Included in this data is information about how often users have reviewed several categories of restaurants along with their rating for each category relative to their average rating. Additional features include the total number of reviews. 
  
- The first step in our scheme is to cluster users based on the user feature vectors $U$. Included in this data is information about how often users have reviewed several categories of restaurants along with their rating for each category relative to their average rating. Additional features include the total number of reviews. 
- 
- If we use this raw data in a K-Means clustering algorithm, we observe very poor results. This is due to some features having much greater values and deviation, therefore receiving more weight. In particular, the total number of businesses a user has reviewed can have a large value whereas the average rating of a category relative to the user average is real valued in the range (0,4). This leads to average category ratings having little impact on the clustering. To avoid this, each feature is scaled relative to the mean and standard deviation of that feature in the dataset \cite{kmeans}. For every feature $\phi^d_i$ corresponding to the $d^{\text{th}}$ feature for user $i$, the scaled feature value $\tilde{\phi^d_i}$ is calculated as
+If we use this raw data in a K-Means clustering algorithm, we observe very poor results. This is due to some features having much greater values and deviation, therefore receiving more weight. In particular, the total number of businesses a user has reviewed can have a large value whereas the average rating of a category relative to the user average is real valued in the range (0,4). This leads to average category ratings having little impact on the clustering. To avoid this, each feature is scaled relative to the mean and standard deviation of that feature in the dataset \cite{kmeans}. For every feature $\phi^d_i$ corresponding to the $d^{\text{th}}$ feature for user $i$, the scaled feature value $\tilde{\phi^d_i}$ is calculated as
  \begin{equation}
 \tilde{\phi^d_i} = \frac{\phi^d_i - \mu^d}{\sigma^d}
  \end{equation}
