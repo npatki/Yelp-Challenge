@@ -264,23 +264,29 @@ The strategy works so that we recursively train-validate-test the business data 
 We now present the results we achieved for each of the variables, as well as the overall end-to-end testing. While the hidden variable method was not supervised, we still present significant trends and comment on the perceived effiency. In the overall system, we present validation accuracies for different hyperparameters.
 
 \subsubsection{Hidden Variable}
+The first step in our scheme is to cluster users based on the user feature vectors $U$. Included in this data is information about how often users have reviewed several categories of restaurants along with their rating for each category relative to their average rating. Additional features include the total number of reviews. 
  
- The first step in our scheme is to cluster users based on the user feature vectors $U$. Included in this data is information about how often users have reviewed several categories of restaurants along with their rating for each category relative to their average rating. Additional features include the total number of reviews. 
- 
- If we use this raw data in a K-Means clustering algorithm, we observe very poor results. This is due to some features having much greater values and deviation, therefore receiving more weight. In particular, the total number of businesses a user has reviewed can have a large value whereas the average rating of a category relative to the user average is real valued in the range (0,4). This leads to average category ratings having little impact on the clustering. To avoid this, each feature is scaled relative to the mean and standard deviation of that feature in the dataset \cite{kmeans}. For every feature $\phi^d_i$ corresponding to the $d^{\text{th}}$ feature for user $i$, the scaled feature value $\tilde{\phi^d_i}$ is calculated as
+If we use this raw data in a K-Means clustering algorithm, we observe very poor results. This is due to some features having much greater values and deviation, therefore receiving more weight. In particular, the total number of businesses a user has reviewed can have a large value whereas the average rating of a category relative to the user average is real valued in the range (0,4). This leads to average category ratings having little impact on the clustering. To avoid this, each feature is scaled relative to the mean and standard deviation of that feature in the dataset \cite{kmeans}. For every feature $\phi^d_i$ corresponding to the $d^{\text{th}}$ feature for user $i$, the scaled feature value $\tilde{\phi^d_i}$ is calculated as
  \begin{equation}
 \tilde{\phi^d_i} = \frac{\phi^d_i - \mu^d}{\sigma^d}
  \end{equation}
  where $\mu^d$ is the average value for feature $\phi^d$ in the dataset with standard deviation $\sigma^d$. This limits the effect a single feature can have on influencing the cluster boundaries.
  
+ \begin{figure}[h!]
+ 	\centering
+ 	\includegraphics[width=0.9\textwidth]{old_features.png}
+ 	\caption{Plot of user features against the feature number. Frequency features represent the total number of reviews a user gives a category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
+ 	\label{fig:bad_clustering}
+ \end{figure} 
+ 
  After applying this correction we observe clusters indicated in Figure \ref{fig:bad_clustering}. This shows that many features are influencing the choice of cluster boundaries, not just one. However, if we delve deeper into the results, we see that the dominant features are the frequency of which users attend restaurants of each category. In this first clustering attempt, the frequency features before scaling are simply the number of reviews a user has written for restaurants in each category. Notice that the clusters seem to be grouped by the number of users have written. This is not ideal since we would like to discriminate users based on preference, not the total number of reviews. The total number of reviews is a relevant feature and is captured in our feature set by the total number of reviews feature but we would prefer that it not dominate the cluster boundaries.
  
- To solve this issue, we re-engineer the category review frequency features. Instead of the features simply being the user's total number of reviews for each category, these features are normalized by the number of user reviews. Therefore, the bias of choosing clusters based on the number of reviews is reduced. The resulting clusters are shown in Figure \ref{fig:better_clustering}.
+ To solve this issue, we re-engineer the category review frequency features. Instead of the features simply being the user's total number of reviews for each category, these features are normalized by the number of user reviews. Therefore, the bias of choosing clusters based on the number of reviews is reduced. The resulting clusters are shown in Figure \ref{fig:better_clustering} for 2 clusters. Notice that now the clusters are separating based on user preferences. For instance, users in cluster 1 tend to rate restaurants with nightlife or bars very poorly.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.9\textwidth]{kmeans3clusters_all.png}
-	\caption{.}
+	\includegraphics[width=0.9\textwidth]{kmeans2clusters_all.png}
+	\caption{Plot of user features against the feature number. Frequency features represent the fraction of a user's reviews that correspond to each category. The feature vector for a given user forms a continuous line color coded by cluster. Feature values plotted on the $y$-axis are scaled by the mean and standard deviation.}
 	\label{fig:better_clustering}
 \end{figure} 
 
