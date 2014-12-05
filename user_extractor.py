@@ -130,6 +130,42 @@ def LoadReviewInformation(review_file):
             
     return reviewDict
 
+"""
+A function that loads business information from .csv files into a dictionary. 
+Information is stored as (business_id, feature_vector).
+"""
+def LoadBusinessFeatures(business_file):
+
+    print "Loading business dictionary..."
+    
+    # create dicitonary of businesses by business ID
+    businessDict = dict()
+
+    # open business file and cycle through all businesses
+    with open(business_file, 'rb') as csvfile:
+
+        # read all lines in the file
+        lines = csvfile.readlines()
+
+        # cycle through bulk data and make sets of restaurant type for businesses
+        for line in lines[1:]:
+        
+            # split line into individual enteries
+            words = line.split()
+            
+            # extract ID
+            ID = words[0]
+            
+            # extract feature vector
+            values = [float(j) for j in words[1:-1]] 
+            
+            # add set to dicitonary
+            businessDict[ID] = values
+
+    return businessDict
+
+
+
 # run script
 if __name__ == '__main__':
 

@@ -46,7 +46,7 @@ def users_validation(predictor, maximum=float('inf')):
         ct += 1
         if ct == maximum:
             break
-        if ct%100 == 0:
+        if ct%1000 == 0:
             print 'done %d users' % ct
 
         guess, actual = predictor(test_vectors[i], v)
@@ -102,9 +102,9 @@ def gaussianMixture(num_clusters, learner):
     def fn(user_vector, user_id):
         scaled_vector = scaler.transform(user_vector)
         c = GMM.predict([scaled_vector])[0]
-        ratings, NA = compute_ratings(set([user_id]))
+        ratings = compute_ratings(set([user_id]))
         
-        inp, actual, NA = get_biz_vectors('all', ratings)
+        inp, actual = get_biz_vectors('all', ratings)
         guess = predictors[c](inp)
         return guess, actual
 
@@ -112,8 +112,8 @@ def gaussianMixture(num_clusters, learner):
 
 def user_history(a, b):
     def fn(user_vector, user_id):
-        ratings, NA = compute_ratings(set([user_id]))
-        _, actual, _ = get_biz_vectors('all', ratings)
+        ratings = compute_ratings(set([user_id]))
+        _, actual = get_biz_vectors('all', ratings)
         output = sum(ratings.values())/float(len(ratings))
         output = np.array([output])
         return output, actual
@@ -184,9 +184,9 @@ def bayesianGaussianMixture(num_clusters, learner):
     def fn(user_vector, user_id):
         scaled_vector = scaler.transform(user_vector)
         new_weights = GMM.predict_proba([scaled_vector])[0]
-        ratings, NA = compute_ratings(set([user_id]))
+        ratings = compute_ratings(set([user_id]))
 
-        inp, actual, NA = get_biz_vectors('all', ratings)
+        inp, actual = get_biz_vectors('all', ratings)
         
         # form bayesian guess
         guess = 0
@@ -228,9 +228,9 @@ def kNeighbors(n_neighbors, learner):
 
         # user the nearest neighbors to perform the learning
         predictor = learner(user_set)
-        ratings, NA = compute_ratings(set([user_id]))
+        ratings = compute_ratings(set([user_id]))
 
-        inp, actual, NA = get_biz_vectors('all', ratings)
+        inp, actual = get_biz_vectors('all', ratings)
         guess = predictor(inp)
 
         return guess, actual
@@ -283,9 +283,9 @@ def kMeans(num_clusters, learner):
     def fn(user_vector, user_id):
         scaled_vector = scaler.transform(user_vector)
         c = kMeans.predict(scaled_vector)[0]
-        ratings, NA = compute_ratings(set([user_id]))
+        ratings = compute_ratings(set([user_id]))
 
-        inp, actual, NA = get_biz_vectors('all', ratings)
+        inp, actual = get_biz_vectors('all', ratings)
         guess = predictors[c](inp)
         return guess, actual
 
@@ -296,46 +296,35 @@ def kMeans(num_clusters, learner):
 # and return a function that's able to predict rating based on the
 # business feature vector
 
-def mle(user_set, weights = None):
+def mle(user_set):
     """Maximum liklihood estimate learner to use as a baseline."""
     
-    ratings, biz_weights = compute_ratings(user_set, weights)
+    ratings = compute_ratings(user_set)
+    avg = sum(ratings.values())/float(len(ratings))
     
-    if biz_weights == None:
-        avg = sum(ratings.values())/float(len(ratings))
-    else:
-        # form weighted average
-        tally = 0
-        weight = 0
-        for key, value in ratings.items():
-            tally += biz_weights[key] * value
-            weight += biz_weights[key]
-        avg = tally / weight
-
     def predict(vals):
         out = [avg]*len(vals)
         return np.array(out)
 
     return predict
 
-def random_forests(user_set, weights = None):
+def random_forests(user_set):
     """ Random forest learner."""
     # TODO set hyperparameters using validation set
     l = ensemble.RandomForestRegressor()
-    ratings, biz_weights = compute_ratings(user_set, weights)
-    X_train, Y_train, W_train = get_biz_vectors('train', ratings, biz_weights)
+    ratings = compute_ratings(user_set)
+    X_train, Y_train = get_biz_vectors('train', ratings)
     l.fit(X_train, Y_train, W_train)
     return l.predict
 
 
-def ridge(user_set, weights = None):
+def ridge(user_set):
     """Ridge regression learner that uses the validation set to tune alpha."""
     alphas = np.logspace(-1, 2, 10)
 
-    ratings, biz_weights = compute_ratings(user_set, weights)
-    X_train, Y_train, W_train = get_biz_vectors('train', ratings, biz_weights)
-    X_validate, Y_validate, W_validate = \
-            get_biz_vectors('validate', ratings, biz_weights)
+    ratings = compute_ratings(user_set)
+    X_train, Y_train = get_biz_vectors('train', ratings)
+    X_validate, Y_validate = get_biz_vectors('validate', ratings)
 
     best_val = float('inf')
     best_predictor = None
@@ -357,9 +346,9 @@ def lasso(user_set):
     """Lasso learner that uses the validation set to tune alpha."""
     alphas = np.logspace(-3,0,10)
 
-    ratings, NA = compute_ratings(user_set)
-    X_train, Y_train, NA = get_biz_vectors('train', ratings)
-    X_validate, Y_validate, NA = get_biz_vectors('validate', ratings)
+    ratings = compute_ratings(user_set)
+    X_train, Y_train = get_biz_vectors('train', ratings)
+    X_validate, Y_validate = get_biz_vectors('validate', ratings)
 
     best_val = float('inf')
     best_predictor = None
@@ -379,8 +368,8 @@ def lasso(user_set):
 
 def bayesian_ridge(user_set):
     # TODO set hyperparameters using validation set
-    ratings, NA = compute_ratings(user_set)
-    X_train, Y_train, NA = get_biz_vectors('train', ratings)
+    ratings = compute_ratings(user_set)
+    X_train, Y_train = get_biz_vectors('train', ratings)
 
     l = linear_model.BayesianRidge()
     l.fit(X_train, Y_train)
