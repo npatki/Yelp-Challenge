@@ -5,6 +5,7 @@ from copy import deepcopy as copy
 from pandas.tools.plotting import parallel_coordinates
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from operator import itemgetter
 
 REVIEW_FILE = '../data/yelp_academic_dataset_review.json'
 reviews = LoadReviewInformation(REVIEW_FILE)
@@ -111,8 +112,76 @@ def get_biz_vectors(process, ratings):
 
 
 def plot_clusters(Xdata, labels, process, ax=None, color=None,
-                     use_columns=False, xticks=None, colormap=None,
-                     **kwds):
+        use_columns=False, xticks=None, colormap=None):
+    """Plot clusters representing the users.
+    
+    :param Xdata: either 'test', 'validate', 'train', or 'all'
+    :returns: the handle of the clustering plot"""
+    partition_list = MAPPING[process]
+
+    labels, Xdata = [list(x) for x in zip(*sorted(zip(labels, Xdata), key=itemgetter(0)))]
+
+    # determine cluster parameters
+    n = len(labels)
+    class_min = float(min(labels))
+    class_max = float(max(labels))
+
+    # Read header
+    filename = '../data/user_features_%d.csv' % partition_list[0]
+    with open(filename, 'rb') as csvfile:
+        lines = csvfile.readlines()
+        header = lines[0].split()
+    header = header[1:]
+
+    # set the x axis to equally spaced
+    x = range(len(Xdata[0]))
+    leg = []
+    names = []
+    for i in xrange(int(class_max)+1):
+        leg.append(None)
+        names.append('Cluster' + str(i+1))
+
+    # set plotting parameters
+    Colorm = plt.get_cmap(colormap)
+    fig = plt.figure()
+    ax = plt.gca()
+
+    # plot data points
+    for i in range(n):
+        y = Xdata[i]
+        kls = labels[i]
+        if leg[kls] is None:
+            leg[kls], = ax.plot(x, y, 
+                    color=Colorm((kls - class_min)/(class_max-class_min)))
+        else:
+            ax.plot(x, y, 
+                    color=Colorm((kls - class_min)/(class_max-class_min)))
+
+    # plot vertical lines
+    for i in x:
+        ax.axvline(i, linewidth=1, color='black')
+
+    # format plot
+    ax.set_xticks(x)
+    #ax.set_xticklabels(header, rotation = 'vertical')
+    ax.set_xlim(x[0], x[-1])
+    leghandle = ax.legend(leg, names, loc='upper right')
+    for legobj in leghandle.legendHandles:
+        legobj.set_linewidth(4.0)
+    
+    ax.grid()
+    plt.xlabel('Features', fontsize=16)
+    plt.ylabel('Scaled Feature Values', fontsize=16)
+
+    bounds = np.linspace(class_min,class_max,10)
+    #cax,_ = mpl.colorbar.make_axes(ax)
+    #cb = mpl.colorbar.ColorbarBase(cax, cmap=Colorm, spacing='proportional', ticks=bounds, boundaries=bounds, format='%.2f')
+
+    plt.show()
+
+
+def plot_single_clusters(Xdata, labels, process, ax=None, color=None,
+        use_columns=False, xticks=None, colormap=None):
     """Plot clusters representing the users.
     
     :param Xdata: either 'test', 'validate', 'train', or 'all'
@@ -133,17 +202,113 @@ def plot_clusters(Xdata, labels, process, ax=None, color=None,
 
     # set the x axis to equally spaced
     x = range(len(Xdata[0]))
+    leg = []
+    names = []
+    for i in xrange(int(class_max)+1):
+        leg.append(None)
+        names.append('Cluster' + str(i+1))
 
+    # set plotting parameters
+    Colorm = plt.get_cmap(colormap)
+        
+    # plot data points
+    for class_val in range(int(class_max)+1):
+        
+        fig = plt.figure()
+        ax = plt.gca()
+        
+        # plot background
+        for i in range(n):
+            y = Xdata[i]
+            kls = labels[i]
+            if kls != class_val:
+                ax.plot(x, y, color='k')
+        
+        # plot class of interest
+        for i in range(n):
+            y = Xdata[i]
+            kls = labels[i]
+            if kls == class_val:
+                ax.plot(x, y, color='r')
+        
+        # plot vertical lines
+        for i in x:
+            ax.axvline(i, linewidth=1, color='black')
+
+        # format plot
+        ax.set_xticks(x)
+        ax.set_xlim(x[0], x[-1])
+        
+        ax.grid()
+        plt.xlabel('Features', fontsize=16)
+        plt.ylabel('Scaled Feature Values', fontsize=16)
+
+        bounds = np.linspace(class_min,class_max,10)
+        #cax,_ = mpl.colorbar.make_axes(ax)
+        #cb = mpl.colorbar.ColorbarBase(cax, cmap=Colorm, spacing='proportional', ticks=bounds, boundaries=bounds, format='%.2f')
+
+        plt.show()
+
+def plot_cluster_averages(Xdata, labels, process, ax=None, color=None,
+        use_columns=False, xticks=None, colormap=None):
+    """Plot clusters representing the users.
+    
+    :param Xdata: either 'test', 'validate', 'train', or 'all'
+    :returns: the handle of the clustering plot"""
+    partition_list = MAPPING[process]
+
+    # determine cluster parameters
+    n = len(labels)
+    class_min = float(min(labels))
+    class_max = float(max(labels))
+
+    # Read header
+    filename = '../data/user_features_%d.csv' % partition_list[0]
+    with open(filename, 'rb') as csvfile:
+        lines = csvfile.readlines()
+        header = lines[0].split()
+    header = header[1:]
+
+    # set the x axis to equally spaced
+    x = range(len(Xdata[0]))
+    yavg = []
+    counts = []
+    leg = []
+    names = []
+    for i in xrange(int(class_max)+1):
+        leg.append(None)
+        names.append('Cluster' + str(i+1))
+        yavg.append(np.zeros(len(Xdata[0])))
+        counts.append(np.zeros(len(Xdata[0])))
+
+    yavg_tot = np.zeros(len(Xdata[0]))
+    counts_tot = np.zeros(len(Xdata[0]))
+    
     # set plotting parameters
     Colorm = plt.get_cmap(colormap)
     fig = plt.figure()
     ax = plt.gca()
+       
+        
+    # tally values
+    for i in range(n):
+        class_val = int(labels[i])
+        for ind, xpt in enumerate(Xdata[i]):
+            yavg[class_val][ind] += xpt
+            counts[class_val][ind] += 1.0
+            yavg_tot[ind] += xpt
+            counts_tot[ind] += 1.0
+
 
     # plot data points
-    for i in range(n):
-        y = Xdata[i]
-        kls = labels[i]
-        ax.plot(x, y, color=Colorm((kls - class_min)/(class_max-class_min)), **kwds)
+    for kls in range(int(class_max)+1):
+        y = yavg[kls] / counts[kls] 
+        leg[kls], = ax.plot(x, y, lw=3,
+                    color=Colorm((kls - class_min)/(class_max-class_min)))
+
+    tmp, = ax.plot(x, yavg_tot / counts_tot, 'k', lw=3)
+    leg.append(tmp)
+    names.append('Average')
 
     # plot vertical lines
     for i in x:
@@ -151,13 +316,21 @@ def plot_clusters(Xdata, labels, process, ax=None, color=None,
 
     # format plot
     ax.set_xticks(x)
-    #ax.set_xticklabels(header, rotation = 'vertical')
     ax.set_xlim(x[0], x[-1])
-    ax.legend(loc='upper right')
+    leghandle = ax.legend(leg, names, loc='upper right')
+
+    print leg
+    for legobj in leghandle.legendHandles:
+        legobj.set_linewidth(4.0)
+    
+   
     ax.grid()
+    plt.xlabel('Features', fontsize=16)
+    plt.ylabel('Scaled Feature Values', fontsize=16)
 
     bounds = np.linspace(class_min,class_max,10)
     #cax,_ = mpl.colorbar.make_axes(ax)
     #cb = mpl.colorbar.ColorbarBase(cax, cmap=Colorm, spacing='proportional', ticks=bounds, boundaries=bounds, format='%.2f')
 
     plt.show()
+
