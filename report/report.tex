@@ -198,7 +198,28 @@ We consider 5 different algorithms when performing the inference.
 For each of the three hidden-variable methods (K-Means, K-Neighbors, and Mixture of Gaussians), we test the inference algorithms above after we determine the appropriate cluster, or mixture of clusters.
 
 \section{Experiments}
+From the Yelp data set, we pulled out businesses that were categorized as `Restaurants' to narrow the scope. After doing so, we had a total of 14,304 business data points, and 12,596 user data points. The rest of this section describes our strategy for training, validating, and testing this data on the methods described previously. We then present our experimental results from running the data, both in terms of accuracy and time efficiency.
+
 \subsection{Setup}
+Our overall setup implemented a recursive train-validation-test strategy. Note that our method implements the overall problem of predicting a rating given a user, business pair. It does so in two steps:
+\begin{enumerate}
+\item Using the user as the input, determine the hidden variable. This is either a single cluster, or a mixture of clusters.
+\item Using the cluster and the business as inputs, predict the overall rating.
+\end{enumerate}
+
+Step 2 can be directly supervised because we are given the actual average rating for a business. Thus, we can tune hyperparameters to the inference problem using the same train-validation-test strategy used in class by splitting the business data into 3 categories. We train the model using the business training data, re-run the model using the validation data, and use the results of the validation data to tune any hyperparameters.
+
+The problem is that step 1 cannot be supervised because it is a hidden variable, even though we need to tune its hyperparameters (the number of clusters, number of nearest neighbors, or number of mixtures). To solve this problem, we note that we can perform end-to-end testing on the entire system. Given a user and a business, we know what the overall rating should be. This means that we can split the user data into 3 categories as well, training the entire system, and validating the system end-to-end to determine the hyperpameters of the hidden variable. Figure \ref{fig:testing} shows a visual schematic of our testing system.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth, height=6cm]{testing_v2}
+    \caption{The overall testing strategy shown for a single model. The model is trained to take in a business and compute the expected rating. As shown by the dashed line, it is a sub-problem within the overall system. When tested end-to-end, it outputs the expected rating for a user, business pair. Red boxes represent the two types of error that we can measure. The green arrows represent which hyperparameters the validation data is affecting.}
+    \label{fig:testing}
+\end{figure} 
+
+The strategy works so that we recursively train-validate-test the business data for every model within a single iteration of training the user data. For example, when we perform validation within the model, represented by the dashed grey area in Figure \ref{fig:testing}, we are testing predictions on businesses that the model has not seen before, but for the same users. In contrast, when we perform end-to-end testing, we are making predictions on users and businesses that the overall system has not seen. We chose a scheme where we used 50\% of the user data and business data to train, 25\% of the data to validate, and 25\% to test.
+
 \subsection{Results}
 
 % \subsection{Regression}
