@@ -396,7 +396,7 @@ if __name__ == '__main__':
 
     #predictor = bayesianGaussianMixture(2, ridge)
     #run( kMeans, lasso, 4 )
-  
+    '''
     print "KN, mle"
     cluster_nums = range(5,10)
     cluster_nums.extend(range(15,150,5))
@@ -405,6 +405,7 @@ if __name__ == '__main__':
         y.append( run( kNeighbors, mle, i ) )
     
     plt.plot(cluster_nums, y, 'kx-')
-    plt.xlabel('Number of Clusters')
+    '''
+    plt.xlabel('Number of Neighbors')
     plt.ylabel('Average Validation Error')
     plt.show()
