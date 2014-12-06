@@ -37,7 +37,7 @@ def users_validation(predictor, maximum=float('inf')):
                     analysis is only done on this many users.
     :returns a float representing the average error made in rating
              per user"""
-    test_vectors, ID = get_user_vectors('validate')
+    test_vectors, ID = get_user_vectors('test')
     total_users = min(len(ID), maximum)
     total_error = 0.0
 
@@ -321,15 +321,5 @@ if __name__ == '__main__':
     # predictor = bayesianGaussianMixture(2, ridge)
 
     #predictor = bayesianGaussianMixture(2, ridge)
-    # run( kMeans, lasso, 4)
-  
-    print "KN, lasso"
-    cluster_nums = range(2,25)
-    y = []
-    for i in cluster_nums:
-        y.append( run( kNeighbors, random_forests, i ) )
-    
-    plt.plot(cluster_nums, y, 'kx-')
-    plt.xlabel('Number of Clusters')
-    plt.ylabel('Average Validation Error')
-    plt.show()
+    run( gaussianMixture, ridge, 3)
+ 
