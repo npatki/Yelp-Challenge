@@ -357,7 +357,7 @@ As we learned previously, results are much improved when the category review fre
 \end{figure}
 
 These clusters show users that have a high number of dance club reviews do not often review bars, sports bars, or pubs. This same group often reviews lounges as well and tends to rate sports bars, karaoke, and music venues highly. Another cluster tends to review wine bars but not dance clubs. This group rates bars and lounges highly but rates jazz clubs poorly. Again, all of this analysis assumes that the clustering algorithm is functioning properly and finding real clusters in the data. We now will see how the clustering scheme affects the prediction of user ratings.
-
+\newpage
 \subsubsection{Overall Trends}
 For the overall system, we first chose a method of clustering (K-Means, K-Neighbors, or Gaussian Mixture), and a method for inference (MLE, lasso, ridge, or Bayesian ridge). We then tested the system end-to-end with the partitions of the user and business data. We let the MLE inference method be the base line with which we compared all other regression methods, because it represents the most simple estimation. We report error in terms of the average absolute value difference between the guess and the actual rating. This error number must range from $[0, 5]$, where a lower number indicates we are making better guesses. Figure~\ref{fig:MLE} visually shows the result of varying the hyperparameter for K-Means, K-Neighbors, and Gaussian Mixtures.
 
