@@ -39,7 +39,7 @@ In 2014, Yelp published an academic dataset containing over 42,000 businesses th
 \subsection{Motivation}
 Yelp does not currently give personal recommendations to its users, but the data it collects about reviews and users make it possible to learn a user's preferences. Typical approaches fall in two categories. Collaborative filtering analyzes similarities between different users, and the items they rate highly. Content-based filtering focuses on a single user's personal history to determine individual likes and dislikes.
 
-For Yelp's data set, we find that a collaborative filter would not take into account an individual's own preferences for cuisines and restaurant sub-categories. However, we cannot use pure content-based filtering because a single user may not have reviewed a significant number of restaurants, making the data points sparse. This motivates us to use a hybrid approach in estimation, where we combine a user's history with a cluster-based approach meant to account for the sparsity of data points. We introduce a hidden variable that models an overall group of similar users, and use this variable to separately learn preferences for each group.
+For Yelp's data set, we find that a collaborative filter would not take into account an individual's own preferences for cuisines and restaurant sub-categories. However, we cannot use pure content-based filtering because a single user may not have reviewed a significant number of restaurants, making the data points sparse. This motivates us to use a hybrid approach in estimation \cite{hybrid}, where we combine a user's history with a cluster-based approach meant to account for the sparsity of data points \cite{Guyon}. We introduce a hidden variable that models an overall group of similar users, and use this variable to separately learn preferences for each group.
 
 An additional challenge and motivation for the problem is analyzing the given data to determine relevant features. Yelp offers a vast array of data ranging from the ambiance in each restaurant, to the number of times a user was voted funny by their peers. Furthermore, the 5 metropolitan areas are diverse in their offerings of food, and users may show preferences towards particular types of restaurants. We spend a significant time engineering feature vectors to reflect the variety of information. After the learning process, this enables us to comment on significant features to reveal trends in user preferences. 
 
@@ -386,7 +386,7 @@ Note that K-Means selects the optimal number of clusters to be 8, while Gaussian
 We find that the K-Neighbors approach is not working as well as the other two. An explanation of this is that the k nearest-neighbors to a single point may not necessarily be users with similar tastes, because we have many dimensions in the user feature vector. Another explanation is that the users belong distinctly in different categories, and forcing the method to use the k nearest-neighbors instead of the category is forcing a mixture of users who have varying tastes. This provides further evidence of the existence of user similarity groups. Table~\ref{tab:baseline} shows the numerical results from running the test set with the hyperparameter that returned the lowest error for the validation set.
 
 \begin{table}[h!]
-    \begin{tabularx}{0.9\textwidth}{| X | r | r | r | }
+    \begin{tabularx}{1.0\textwidth}{| X | r | r | r | }
         \hline
         Method & Hyperparameter & Validation Error & Test Error \\
         \hline
@@ -424,7 +424,7 @@ Next, we compare the different types of inference methods to MLE. For each hidde
 We are also interested to see how the error changed between using MLE as the inference model, versus using an actual regression model. Overall, we find that all the regression models show a lower error rate than using the MLE, which provides evidence that the second non-hidden variable also works to improve the accuracy. Table~\ref{tab:improvement} shows results from this portion.
 
 \begin{table}[h!]
-    \begin{tabularx}{0.9\textwidth}{| l | X | r | X | X | X |}
+    \begin{tabularx}{1.0\textwidth}{| l | X | r | X | X | X |}
         \hline
         Cluster Method & Model Method & Hyperparam & Validation Error & Test Error & \% \mbox{Improvement}\\
         \hline
@@ -507,7 +507,7 @@ Finally, we also try using regression models for the second variable. We show th
 As before, we can also look at the test error rates for each of these systems. These are reported in Table~\ref{tab:improvement_NL}, where Improvement is shown relative to the MLE results.
 
 \begin{table}[h!]
-    \begin{tabularx}{0.9\textwidth}{| l | X | r | X | X | X |}
+    \begin{tabularx}{1.0\textwidth}{| l | X | r | X | X | X |}
         \hline
         Cluster Method & Model Method & Hyperparameter & Validation Error & Test Error & \% \mbox{Improvement}\\
         \hline
