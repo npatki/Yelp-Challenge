@@ -258,7 +258,6 @@ We consider 5 different algorithms when performing the inference.
 \item Ridge: This is the ridge regression, as implemented in class.
 \item Lasso: This is the lasso regression, as implemented in class.
 \item Bayesian Ridge: This is a ridge-type regression that assumes all the input data is Bayesian. We were motivated to try this because we expected a user's ratings patterns to follow roughly a bell-shaped distribution.
-\item Random Forests: This constructs rules to use for classification. We were motivated to try this because many of our features were discrete valued, and the output star ratings all lied in the range $[1, 5]$.
 \end{itemize}
 
 For each of the three hidden-variable methods (K-Means, K-Neighbors, and Mixture of Gaussians), we test the inference algorithms above after we determine the appropriate cluster, or mixture of clusters.
@@ -360,7 +359,7 @@ As we learned previously, results are much improved when the category review fre
 These clusters show users that have a high number of dance club reviews do not often review bars, sports bars, or pubs. This same group often reviews lounges as well and tends to rate sports bars, karaoke, and music venues highly. Another cluster tends to review wine bars but not dance clubs. This group rates bars and lounges highly but rates jazz clubs poorly. Again, all of this analysis assumes that the clustering algorithm is functioning properly and finding real clusters in the data. We now will see how the clustering scheme affects the prediction of user ratings.
 
 \subsubsection{Overall Trends}
-For the overal system, we first chose a method of clustering (k-means, k-neighbors, or gaussian mixture), and a method for inference (MLE, lasso, ridge, bayesian ridge, or random forests). We then tested the system end-to-end with the partitions of the user and business data. We let the MLE inference method be the base line with which we compared all other regression methods, because it represents the most simple estimation. We report error in terms of the average absolute value difference between the guess and the actual rating. This error number must range from $[0, 5]$, where a lower number indicates we are making better guesses. Figure~\ref{fig:MLE} visually shows the result of varying the hyperparameter for K-Means, K-Neighbors, and Gaussian Mixtures.
+For the overal system, we first chose a method of clustering (K-Means, K-Neighbors, or Gaussian Mixture), and a method for inference (MLE, lasso, ridge, or bayesian ridge). We then tested the system end-to-end with the partitions of the user and business data. We let the MLE inference method be the base line with which we compared all other regression methods, because it represents the most simple estimation. We report error in terms of the average absolute value difference between the guess and the actual rating. This error number must range from $[0, 5]$, where a lower number indicates we are making better guesses. Figure~\ref{fig:MLE} visually shows the result of varying the hyperparameter for K-Means, K-Neighbors, and Gaussian Mixtures.
 
 \begin{figure}[h!]
     \begin{subfigure}[h!]{0.33\textwidth}
@@ -382,9 +381,9 @@ For the overal system, we first chose a method of clustering (k-means, k-neighbo
     \label{fig:MLE}
 \end{figure}
 
-Note that K-Means selects the optimal number of clusters to be 8, while gaussian mixtures selects 14. The starting downwards trends in Figure~\ref{fig:kmMLE} and Figure~\ref{fig:gmMLE} shows that custering is having an effect on the error rate. If adding more clusters is resulting in a lower error, it is evidence that the clusters are finding categories of similar users, and that these cateories are successfully differentiating between different users' tastes.
+Note that K-Means selects the optimal number of clusters to be 8, while Gaussian Mixtures selects 14. The starting downwards trends in Figure~\ref{fig:kmMLE} and Figure~\ref{fig:gmMLE} shows that custering is having an effect on the error rate. If adding more clusters is resulting in a lower error, it is evidence that the clusters are finding categories of similar users, and that these cateories are successfully differentiating between different users' tastes.
 
-We find that the K-Neighbors approach is not working as well as the other two. An explanation of this is that the k nearest-neighbors to a single point may not necessarily be users with similar tastes, because we have many dimensions in the user feature vector. Another explanation is that the users belong distinctly in different categories, and forcing the method to use the k nearest-neighbors instead of the category is forcing a mixture of users who have varying tastes. This provides further evidence of the existance of latent user categories. Table~\ref{tab:baseline} shows the numerical results from running the test set with the hyperparameter that returned the lowest error for the validation set.
+We find that the K-Neighbors approach is not working as well as the other two. An explanation of this is that the k nearest-neighbors to a single point may not necessarily be users with similar tastes, because we have many dimensions in the user feature vector. Another explanation is that the users belong distinctly in different categories, and forcing the method to use the k nearest-neighbors instead of the category is forcing a mixture of users who have varying tastes. This provides further evidence of the existence of user similarity groups. Table~\ref{tab:baseline} shows the numerical results from running the test set with the hyperparameter that returned the lowest error for the validation set.
 
 \begin{table}[h!]
     \begin{tabularx}{0.9\textwidth}{| X | r | r | r | }
@@ -400,7 +399,7 @@ We find that the K-Neighbors approach is not working as well as the other two. A
     \label{tab:baseline}
 \end{table}
 
-Next, we compare the different types of inference methods to MLE. For each hidden variable method (K-Means, K-Neighbors, Gaussian Mixtures), we run the testing scheme using each lasso, ridge, and bayesian ridge as our models of regression. We pick the model that achieves the lowest error on the end-to-end validation set. Figure~\ref{fig:BEST} shows optimal method chosen by each hidden variable method, and the effect of varying its hyperparameter for that method. 
+Next, we compare the different types of inference methods to MLE. For each hidden variable method (K-Means, K-Neighbors, Gaussian Mixtures), we run the testing scheme using lasso, ridge, and bayesian ridge as our models of regression. We pick the model that achieves the lowest error on the end-to-end validation set. Figure~\ref{fig:BEST} shows optimal method chosen by each hidden variable method, and the effect of varying its hyperparameter for that method. 
 
 \begin{figure}[h!]
     \begin{subfigure}[h!]{0.33\textwidth}
@@ -434,13 +433,96 @@ We are also interested to see how the error changed between using MLE as the inf
         Gaussian Mixture & Lasso & 14 & 0.932 & 0.938 & 0.53 \\
         \hline
     \end{tabularx}
-    \caption{The lowest validation error achieved and the corresponding test error for K-Means, K-Neighbors, and Gaussian Mixtures for the hidden variable, and MLE for the inference model per cluster. This is our baseline to which we will compare the other methods.}
+    \caption{The lowest validation error achieved and the corresponding test error for K-Means, K-Neighbors, and Gaussian Mixtures for the hidden variable, for different types of inference models. The improvement is measured relative to the test error for the MLE case.}
     \label{tab:improvement}
 \end{table}
 
 For Gaussian Mixtures, there seems to be minimal improvement as comared to the MLE method. However, both K-Means and K-Neighbors enjoy a 5\% improvement when using a regression method for the second variable instead of the maximum liklihood estimate.
 
 Overall, we have evidence that both variables contribute to improving the predicted error rate. For the hidden variable, the evidence comes from the fact that adding more clusters seems drives down the error. This means that the clusters are contributing to a correct prediction by grouping similar users together. For the non-hidden variable, this evidence comes from the fact that using a regression model for inference shows an improvement in error over using the MLE.
+
+\subsubsection{Overall Trends in Nightlife}
+For the nightlife category, we apply the same techniques as the overall restaurant category. First, we compare the different methods using the MLE estimate for inference of the second variable. The effect of varying the hyperparameter for each is shown in Figure~\ref{fig:MLE_NL}.
+
+\begin{figure}[h!]
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{NL_kmeans_mle.png}
+        \caption{K-Means/MLE}
+        \label{fig:kmMLE_NL}
+    \end{subfigure}%
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{NL_KN_mle.png}
+        \caption{K-Neighbors/MLE}
+        \label{fig:knMLE_NL}
+    \end{subfigure}
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{NL_GM_mle.png}
+        \caption{Gaussian Mixture/MLE}
+        \label{fig:gmMLE_NL}
+    \end{subfigure}
+    \caption{Running the three types of clustering using the MLE estimate for each individual inference problem, only with restaurants in the nightlife category.}
+    \label{fig:MLE_NL}
+\end{figure}
+
+We find that the results here show generally the same trends as the previous results, except the K-Neighbors model, which seems to be performing optimally at 8 clusters. We notice here that at the beginning of the graph in Figure~\ref{fig:knMLE_NL}, the error rate goes down with the number of users in a cluster. Unlike the previous section, where we used all categories of restaurants, looking at k nearest-neighbors seems to be helping make a better prediction. This may because because, based on the data, individuals tend to have strong preferences about bars. This can mean that the groups of similar users are spread out from other groups in feature space, but densely populated within themselves. This means that looking at the k-nearest neighbors essentially looks at users in the same cluster as the queried user, leading to better results.
+
+Overall, the error rate in the night life category is lower than that of the previous section, as shown in Table~\ref{tab:baseline_NL}. This is not suprising if we assume that users have strong preferences about nightlife.
+
+\begin{table}[h!]
+    \begin{tabularx}{0.9\textwidth}{| X | r | r | r | r |}
+        \hline
+        Method & Hyperparam & Validation Error & Test Error & \% Change\\
+        \hline
+        K-Means &  20 & 0.836 & 0.843 & 7.43 \\
+        K-Neighbors &  8 & 0.842 & 0.846 & 11.32 \\
+        Gaussian Mixture & 13 & 0.857 & 0.861 & 8.70 \\
+        \hline
+    \end{tabularx}
+    \caption{The lowest validation error achieved and the corresponding test error for K-Means, K-Neighbors, and Gaussian Mixtures for the hidden variable, and MLE for the inference model per cluster, only within the nighlife category. The \% Change is the improvement as compared to the test data in Table~\ref{tab:baseline}, MLE estimates for all restaurant data.}
+    \label{tab:baseline_NL}
+\end{table}
+
+Finally, we also try using regression models for the second variable. We show the results of varying the hyperparameter for the regression model that yields the lowest error, for each K-Mean, K-Neighbors, and Gaussian Mixtures in Figure~\ref{fig:BEST_NL}.
+
+\begin{figure}[h!]
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{NL_kmeans_ridge.png}
+        \caption{K-Means/Ridge}
+        \label{fig:kmBEST}
+    \end{subfigure}%
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{NL_KN_mle.png}
+        \caption{K-Neighbors/MLE}
+        \label{fig:knBEST}
+    \end{subfigure}
+    \begin{subfigure}[h!]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{NL_GM_ridge.png}
+        \caption{Gaussian Mixture/Ridge}
+        \label{fig:gmBEST}
+    \end{subfigure}
+    \caption{Running the three types of clustering on the best model of inference for each, as determined by the validation error, for only the nighlife category.}
+    \label{fig:BEST_NL}
+\end{figure}
+
+As before, we can also look at the test error rates for each of these systems. These are reported in Table~\ref{tab:improvement_NL}, where Improvement is shown relative to the MLE results.
+
+\begin{table}[h!]
+    \begin{tabularx}{0.9\textwidth}{| r | X | r | X | X | X |}
+        \hline
+        Cluster Method & Model Method & Hyperparam & Validation Error & Test Error & \% Improvement\\
+        \hline
+        K-Means & Ridge & 4 & 0.780 & 0.801 & 4.98 \\
+        K-Neighbors & MLE & 8 & 0.842 & 0.846 & 0.00 \\
+        Gaussian Mixture & Ridge & 3 & 0.832 & 0.831 & 3.60 \\
+        \hline
+    \end{tabularx}
+    \caption{The lowest validation error achieved and the corresponding test error for K-Means, K-Neighbors, and Gaussian Mixtures for the hidden variable, and different inference type of inference models, only with nightlife. The \% Improvement is the improvement upon the test results in Table~\ref{tab:baseline_NL}.}
+    \label{tab:improvement_NL}
+\end{table}
+
+Note that the K-Neighbors seems to favor MLE in this case over all the other tested regression models. In constrast, K-Means and Gaussian Mixture both favor using ridge regression for the individual models. We can also see that substituting the ridge regression instead of the MLE in these two cases does not affect the error rate as significantly as it did in the previous section. This confirms are belief that users have strong preferences with nightlife, as the clusters themselves figure out the preferences and there is not much more room for the regression to figure out a trend when compared to the maximum liklihood estimate.
+
+Overall we see that the hidden variable is most important when users have strong preferences and can fall easily within groups. If the preferences are moderate, the groups are close together, and it's likely that the second variable's regressio method will also lower the error rate.
 % \subsection{Regression}
 % \subsubsection{Maximum Liklihood Estimate}
 % \subsubsection{Bayesian Ridge}
