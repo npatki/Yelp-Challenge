@@ -48,7 +48,7 @@ The overall goal is to accept, as inputs, a user and business, and to output a f
 
 \begin{enumerate}
 \item Categorize the users into groups who have roughly similar interests. This is the hidden variable.
-\item Separetely train each category to learn the average business rating for only the users in that group.
+\item Separately train each category to learn the average business rating for only the users in that group.
 \end{enumerate}
 
 For example, assume a particular group we learn in step 1 contains users who prefer Mexican restaurants. In step 2, the expected output is the average rating given only by its members. This means that another group may be trained to rate the same business differently, which shows its users have different broad preferences. Figure \ref{fig:system} shows an overall schematic of the system.\\
@@ -524,7 +524,7 @@ Note that the K-Neighbors seems to favor MLE in this case over all the other tes
 
 Overall we see that the hidden variable is most important when users have strong preferences and can fall easily within groups. If the preferences are moderate, the groups are close together, and it's likely that the second variable's regression method will also lower the error rate.
 % \subsection{Regression}
-% \subsubsection{Maximum Liklihood Estimate}
+% \subsubsection{Maximum Likelihood Estimate}
 % \subsubsection{Bayesian Ridge}
 % \subsubsection{Lasso}
 % \subsubsection{Random Forest}
