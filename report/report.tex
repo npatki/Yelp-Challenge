@@ -486,7 +486,7 @@ Finally, we also try using regression models for the second variable. We show th
 
 \begin{figure}[h!]
     \begin{subfigure}[h!]{0.33\textwidth}
-        \includegraphics[width=\textwidth]{NL_kmeans_ridge.png}
+        \includegraphics[width=\textwidth]{NL_kMeans_ridge.png}
         \caption{K-Means/Ridge}
         \label{fig:kmBEST}
     \end{subfigure}%
@@ -523,11 +523,11 @@ As before, we can also look at the test error rates for each of these systems. T
 Note that the K-Neighbors seems to favor MLE in this case over all the other tested regression models. In constrast, K-Means and Gaussian Mixture both favor using ridge regression for the individual models. We can also see that substituting the ridge regression instead of the MLE in these two cases does not affect the error rate as significantly as it did in the previous section. This confirms are belief that users have strong preferences with nightlife, as the clusters themselves figure out the preferences and there is not much more room for the regression to figure out a trend when compared to the maximum liklihood estimate.
 
 Overall we see that the hidden variable is most important when users have strong preferences and can fall easily within groups. If the preferences are moderate, the groups are close together, and it's likely that the second variable's regressio method will also lower the error rate.
-% \subsection{Regression}
-% \subsubsection{Maximum Liklihood Estimate}
-% \subsubsection{Bayesian Ridge}
-% \subsubsection{Lasso}
-% \subsubsection{Random Forest}
+
+\section{Conclusion}
+We find that both variables in our 2-variable recommendation system influence the accuracy in predicting the ratings. In constructing the system, we observe that we can modularize the different variables, so it is possible to plug in different numerical methods for inference as each of the variables. The validation set is used to choose a combination of these methods that minizes the predictive error. Although the first variable is hidden and cannot be supervised, we find that performing end-to-end testing on the data allows us to validate the method and choose its hyperparameters as well. Through experimenting with the 2 variables, we found evidence to show that both variables worked to minimize error. By balancing a clustering method with a regression method, we found that 1 of the variables was able to make up for the weakness of another. For example, when user preferences were weaker, the clustering may not have been as accurate, but the regression helped to minimize remaining errors.
+
+In the future, we wish to explore more methods of regression to use as the hidden variable. We may also explore a richer set of features using the actual review text provided with each review. This will be a good opportunity to incorporate Natural Language Processing techniques to determine if the language a user writes with also affects the overall rating.
 
 \clearpage
 \bibliography{references}
